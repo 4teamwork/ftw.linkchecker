@@ -1,19 +1,20 @@
-from ftw.linkchecker import urls_testing
 from multiprocessing import Pool
-import os
-import requests
-import sys
 import time
+import requests
+import urls_testing
+import os
+import sys
 
-
-TIMEOUT = 1
+urls = urls_testing.urls
+number_of_processes = len(urls)
+timeout = 1
 
 
 def millis():
     return int(round(time.time() * 1000))
 
 
-def get_uri_response(url_item):
+def get_uri_responses(urls):
     headers = {
         'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 Safari/537.36'
     }
@@ -21,8 +22,8 @@ def get_uri_response(url_item):
     response = None
     start_time = millis()
     try:
-        response = requests.head(url_item.get('destination'),
-                                 timeout=TIMEOUT,
+        response = requests.head(urls.get('destination'),
+                                 timeout=timeout,
                                  headers=headers,
                                  allow_redirects=False)
     except requests.exceptions.Timeout:
@@ -33,49 +34,66 @@ def get_uri_response(url_item):
         error = 'Connection Error'
     except requests.exceptions.RequestException as e:
         error = e
-
     time = millis() - start_time
-
     result = {
-        'origin': url_item.get('origin'),
-        'destination': url_item.get('destination'),
+        'origin': urls.get('origin'),
+        'destination': urls.get('destination'),
+        'data': response,
         'error': error,
-        'time': time,
     }
+    result.update({'time': time})
 
-    result.update(extract_header_information(response))
     return result
 
 
 def limit_cpu():
-    os.nice(19)
+    try:
+        sys.getwindowsversion()
+    except AttributeError:
+        isWindows = False
+    else:
+        isWindows = True
 
+    if isWindows:
+        import win32api
+        import win32process
+        import win32con
 
-def extract_header_information(response):
-    attachement = {
-        'status code': None,
-        'header location': None,
-        'content type': None,
-    }
-    if not response:
-        return attachement
-
-    attachement['status code'] = response.status_code
-
-    headers = response.headers
-    if headers:
-        attachement['header location'] = headers.get('Location', None)
-        attachement['content type'] = headers.get('Content-Type', None)
-    return attachement
+        pid = win32api.GetCurrentProcessId()
+        handle = win32api.OpenProcess(win32con.PROCESS_ALL_ACCESS, True, pid)
+        win32process.SetPriorityClass(
+            handle, win32process.BELOW_NORMAL_PRIORITY_CLASS)
+    else:
+        os.nice(19)
 
 
 def work_through_urls():
-    urls = urls_testing.urls
-    pool = Pool(initializer=limit_cpu)
+    pool = Pool(number_of_processes, limit_cpu)
     start_time = millis()
-    results = pool.map(get_uri_response, urls)
+    results = pool.map(get_uri_responses, urls)
     total_time = millis() - start_time
-    return [total_time, results]
+    result_collection = []
+    for result in results:
+        status_code = None
+        header_location = None
+        content_type = None
+        if result.get('data'):
+            if result.get('data').status_code:
+                status_code = result.get('data').status_code
+            if result.get('data').headers.get('Location', ''):
+                header_location = result.get(
+                    'data').headers.get('Location', '')
+            if result.get('data').headers.get('Content-Type', ''):
+                content_type = result.get(
+                    'data').headers.get('Content-Type', '')
+        del result['data']
+        result.update({
+                      'status code': status_code,
+                      'header location': header_location,
+                      'content type': content_type,
+                      })
+        result_collection.append(result)
+    return [total_time, result_collection]
 
 
 if __name__ == '__main__':
