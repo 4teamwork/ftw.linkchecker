@@ -2,6 +2,8 @@ from multiprocessing import Pool
 import time
 import requests
 import urls_testing
+import os
+import sys
 
 urls = urls_testing.urls
 number_of_processes = len(urls)
@@ -44,8 +46,29 @@ def get_uri_responses(urls):
     return result
 
 
+def limit_cpu():
+    try:
+        sys.getwindowsversion()
+    except AttributeError:
+        isWindows = False
+    else:
+        isWindows = True
+
+    if isWindows:
+        import win32api
+        import win32process
+        import win32con
+
+        pid = win32api.GetCurrentProcessId()
+        handle = win32api.OpenProcess(win32con.PROCESS_ALL_ACCESS, True, pid)
+        win32process.SetPriorityClass(
+            handle, win32process.BELOW_NORMAL_PRIORITY_CLASS)
+    else:
+        os.nice(19)
+
+
 def work_through_urls():
-    pool = Pool(processes=number_of_processes)
+    pool = Pool(number_of_processes, limit_cpu)
     start_time = millis()
     results = pool.map(get_uri_responses, urls)
     total_time = millis() - start_time
