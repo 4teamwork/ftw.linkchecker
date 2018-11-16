@@ -1,35 +1,49 @@
-from zope.component.hooks import setSite
-from Testing.makerequest import makerequest
 from AccessControl.SecurityManagement import newSecurityManager
-from zope.globalrequest import setRequest
-import AccessControl
 from zc.relation.interfaces import ICatalog
 from zope.component import getUtility
+from zope.component.hooks import setSite
+import AccessControl
+from Products.CMFPlone.interfaces import IPloneSiteRoot
 
 
-def main(plone, *args):
+def get_plone_sites_information(app):
+    plone_sites = [obj for obj in app.objectValues(
+    ) if IPloneSiteRoot.providedBy(obj)]
+    # create information dictionary for each plone site
+    plone_sites_information = [{
+        'id': plone_site.getId(),
+        'path': '/'.join(plone_site.getPhysicalPath()),
+        'title': plone_site.Title()
+    } for plone_site in plone_sites]
 
-    # Set up request for debug / bin/instance run mode.
-    app = makerequest(plone)
-    setRequest(app.REQUEST)
+    return plone_sites_information
 
-    houptding = app.restrictedTraverse('/')
 
-    # here all pages need to be found
-    # for now there is only 'Plone'
-    # later on we need to iterate through
-    # each page and send reports to different people
-
-    MINI_SITE = houptding.get('Plone')
-
+def setup_plone(plone_site):
     user = AccessControl.SecurityManagement.SpecialUsers.system
-    user = user.__of__(MINI_SITE.acl_users)
-    newSecurityManager(MINI_SITE, user)
-
-    setSite(MINI_SITE)
-
-    relation_catalog = getUtility(ICatalog)
+    user = user.__of__(plone_site.acl_users)
+    newSecurityManager(plone_site, user)
+    setSite(plone_site)
 
 
-if __name__ == '__main__':
-    main()
+def get_relation_catalog_for_plone_site(app, PloneSiteId):
+    plone_site = app.get(PloneSiteId)
+    setup_plone(plone_site)
+
+    return getUtility(ICatalog)
+
+
+def catalog_lookup(relation_catalog):
+    x = relation_catalog
+    relations = list(x.findRelations())
+    print(relations)
+
+
+def main(app, *args):
+    plone_sites_information = get_plone_sites_information(app)
+    for site_info in plone_sites_information:
+        relation_catalog = get_relation_catalog_for_plone_site(
+            app,
+            site_info['id']
+        )
+        catalog_lookup(relation_catalog)
