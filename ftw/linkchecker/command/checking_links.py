@@ -1,5 +1,4 @@
 from AccessControl.SecurityManagement import newSecurityManager
-from Products.CMFPlone.interfaces import IPloneSiteRoot
 from zc.relation.interfaces import ICatalog
 from zope.component import getUtility
 from zope.component.hooks import setSite
@@ -7,9 +6,19 @@ import AccessControl
 
 
 def get_plone_sites_information(app):
-    plone_sites = [obj for obj in app.objectValues(
-    ) if IPloneSiteRoot.providedBy(obj)]
-    # create information dictionary for each plone site
+
+    """Get all PloneSites and their information
+    """
+    def get_plone_sites(app):
+        for child in app.objectValues():
+            if child.meta_type == 'Plone Site':
+                yield child
+            elif child.meta_type == 'Folder':
+                for item in get_plone_sites(child):
+                    yield item
+
+    plone_sites = get_plone_sites(app)
+
     plone_sites_information = [{
         'id': plone_site.getId(),
         'path': '/'.join(plone_site.getPhysicalPath()),
