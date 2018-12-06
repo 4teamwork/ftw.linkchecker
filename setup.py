@@ -51,14 +51,19 @@ setup(
         'ftw.upgrade',
         'xlsxwriter',
         'plone.api',
+        'plone.app.relationfield',
+        'plone.recipe.zope2instance',
     ],
 
     tests_require=tests_require,
     extras_require=extras_require,
 
     entry_points="""
-    # -*- Entry points: -*-
-    [z3c.autoinclude.plugin]
-    target = plone
-    """,
+      # -*- Entry points: -*-
+      [z3c.autoinclude.plugin]
+      target = plone
+
+      [zopectl.command]
+      check_links = ftw.linkchecker.command.checking_links:main
+      """,
 )
