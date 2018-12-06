@@ -49,6 +49,8 @@ setup(
         'Plone',
         'setuptools',
         'ftw.upgrade',
+        'xlsxwriter',
+        'plone.api',
     ],
 
     tests_require=tests_require,
