@@ -1,11 +1,21 @@
+from AccessControl.SecurityManagement import newSecurityManager
 from ftw.builder import Builder
 from ftw.builder import create
-from ftw.testbrowser import browsing
-from ftw.linkchecker.tests.base import FunctionalTestCase
-import pandas as pd
-import os
 from ftw.linkchecker import report_generating
-from ftw.linkchecker.cell_format import BOLD, CENTER, DEFAULT_FONTNAME, DEFAULT_FONTSIZE
+from ftw.linkchecker import report_mailer
+from ftw.linkchecker.cell_format import BOLD
+from ftw.linkchecker.cell_format import CENTER
+from ftw.linkchecker.cell_format import DEFAULT_FONTNAME
+from ftw.linkchecker.cell_format import DEFAULT_FONTSIZE
+from ftw.linkchecker.tests.base import FunctionalTestCase
+from ftw.testbrowser import browsing
+from ftw.testing.mailing import Mailing
+from zope.component.hooks import setSite
+import AccessControl
+import email
+import os
+import pandas as pd
+import transaction
 
 
 CURRENT_PATH = os.path.dirname(os.path.abspath(__file__))
@@ -53,7 +63,44 @@ class TestLinkChecker(FunctionalTestCase):
     def test_if_mail_sender_sending_mail_incl_attachement(self):
         """Test if the mail sent by linkchecker can be received correctly.
         """
-        pass
+
+        # test email variables
+        email_subject = 'Linkchecker Report'
+        email_message = 'Dear Site Administrator, \n\n\
+            Please check out the linkchecker report attached to this mail.\n\n\
+            Friendly regards,\n\
+            your 4teamwork linkcheck reporter'
+        receiver_email_address = 'hugo@boss.ch'
+        report_path = CURRENT_PATH + \
+            '/exemplar_data/expected_excel_sheet_outcome.xlsx'
+
+        # setUp
+        Mailing(self.layer['portal']).set_up()
+        transaction.commit()
+        portal = self.layer['portal']
+        # setup plone site
+        user = AccessControl.SecurityManagement.SpecialUsers.system
+        user = user.__of__(portal.acl_users)
+        newSecurityManager(portal, user)
+        setSite(portal)
+
+        report_mailer_instance = report_mailer.MailSender(portal)
+        report_mailer_instance.send_feedback(
+            email_subject, email_message, receiver_email_address, report_path)
+        mail = Mailing(portal).pop()
+        mail_obj = email.message_from_string(mail)
+
+        self.assertEqual(
+            mail_obj.get('To'), 'hugo@boss.ch',
+            'The email is expected to be sent to given reveiver.')
+
+        self.assertEqual(
+            mail_obj.get_payload()[1].get_content_type(),
+            'application/octet-stream',
+            'The emails attachement is expected to be a binary file.')
+
+        # tearDown
+        Mailing(self.layer['portal']).tear_down()
 
     def generate_test_data_excel_workbook(self, path_of_excel_workbook_generated):
         exemplar_report_data = [
