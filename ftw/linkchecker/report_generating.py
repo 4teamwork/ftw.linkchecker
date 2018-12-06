@@ -1,6 +1,18 @@
-from ftw.linkchecker.cell_format import BOLD, CENTER, DEFAULT_FONTNAME, DEFAULT_FONTSIZE
-import time
 import xlsxwriter
+
+
+LABELS = [
+    [
+        'Internal/External',
+        'Origin',
+        'Destination',
+        'Status Code',
+        'Content Type',
+        'Response Time',
+        'Header Location',
+        'Error Message'
+    ]
+]
 
 
 class ReportCreator(object):
@@ -23,7 +35,7 @@ class ReportCreator(object):
         self.table.extend(report_data)
 
     def add_general_autofilter(self):
-        self.worksheet.autofilter(0, 0, self.row, len(labels[0]) - 1)
+        self.worksheet.autofilter(0, 0, self.row, len(LABELS[0]) - 1)
 
     def get_column_widths(self):
         columns_size = [0] * len(self.table[0])
@@ -39,41 +51,3 @@ class ReportCreator(object):
 
     def safe_workbook(self):
         self.workbook.close()
-
-
-xlsx_file_path = 'Broken_Link_Report{}.xlsx'
-xlsx_file_path = xlsx_file_path.format(time.strftime('_%Y_%m_%d_%H_%M'))
-
-report_data = [
-    ['Some', 'exampleafsjdllasjfnsadkfnal;sjfsjdnfkas sjfldjflajsk',
-        'data', 'to', 'fill', 'the', 'excel', 'sheet'],
-    ['Some', 'example', 'data', 'to', 'fill', 'the', 'excel', 'sheet'],
-    ['Some', 'example', 'data', 'to', 'fill', 'the', 'excel', 'sheet'],
-    ['Some', 'example', 'data', 'to', 'fill', 'the', 'excel', 'sheet'],
-    ['Some', 'example', 'data', 'to', 'fill', 'the', 'excel', 'sheet'],
-    ['Some', 'example', 'data', 'to', 'fill', 'the', 'excel', 'sheet'],
-    ['Some', 'example', 'data', 'to', 'fill', 'the', 'excel', 'sheet'],
-    ['Some', 'example', 'data', 'to', 'fill', 'the', 'excel', 'sheet'],
-    ['Some', 'example', 'data', 'to', 'fill', 'the', 'excel', 'sheet'],
-]
-
-labels = [
-    [
-        'Internal/External',
-        'Origin',
-        'Destination',
-        'Status Code',
-        'Content Type',
-        'Response Time',
-        'Header Location',
-        'Error Message'
-    ]
-]
-
-file_i = ReportCreator(xlsx_file_path)
-file_i.append_report_data(labels, BOLD & CENTER &
-                          DEFAULT_FONTNAME & DEFAULT_FONTSIZE)
-file_i.append_report_data(report_data, DEFAULT_FONTNAME & DEFAULT_FONTSIZE)
-file_i.add_general_autofilter()
-file_i.cell_width_autofitter()
-file_i.safe_workbook()
