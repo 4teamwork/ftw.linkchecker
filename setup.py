@@ -55,6 +55,7 @@ setup(
         'plone.api',
         'plone.app.relationfield',
         'plone.recipe.zope2instance',
+        'plone.api'
     ],
 
     tests_require=tests_require,
