@@ -9,6 +9,8 @@ tests_require = [
     'ftw.testing',
     'plone.app.testing',
     'plone.testing',
+    'pandas==0.22.0',
+    'xlrd >= 0.9.0',
 ]
 
 extras_require = {
