@@ -1,6 +1,9 @@
+import os
+import time
 from AccessControl.SecurityManagement import newSecurityManager
 from Products.CMFPlone.interfaces import IPloneSiteRoot
 from ftw.linkchecker import linkchecker
+from ftw.linkchecker import report_generating
 from plone import api
 from plone.app.textfield.interfaces import IRichText
 from plone.dexterity.interfaces import IDexterityFTI
@@ -12,6 +15,11 @@ from zope.component.hooks import setSite
 from zope.schema import getFieldsInOrder
 import AccessControl
 import re
+
+from ftw.linkchecker.cell_format import BOLD
+from ftw.linkchecker.cell_format import CENTER
+from ftw.linkchecker.cell_format import DEFAULT_FONTNAME
+from ftw.linkchecker.cell_format import DEFAULT_FONTSIZE
 
 
 def get_plone_sites_information(app):
@@ -147,25 +155,49 @@ def iter_schemata_for_protal_type(portal_type):
 
 
 def create_and_send_mailreport_to_plone_site_responible_person(
-        email_address, site_info, broken_internal, broken_external):
-    path_to_report = create_excel_report_and_return_filepath(
-        site_info, broken_internal, broken_external)
+        email_address, broken_internal, broken_external):
+    path_to_report = create_excel_report_and_return_filepath(broken_internal,
+                                                             broken_external)
     send_mail_with_excel_report_attached(email_address, path_to_report)
 
 
-def create_excel_report_and_return_filepath(
-        site_info, broken_internal, broken_external):
-    # this function needs to create an excel report, safe it into a temp folder
-    # it then returns the path to that file.
-    # It makes use of the report generator from branch
-    # mo/excel_report_generator
-    pass
+def create_excel_report_and_return_filepath(broken_internal, broken_external):
+    filename = 'linkchecker_report_{}.xlsx'.format(
+        time.strftime('%Y_%b_%d_%H%M%S', time.gmtime()))
+    current_path = os.path.dirname(os.path.abspath(__file__))
+    path_of_excel_workbook_generated = current_path + '/reports/' + filename
+    broken_external = [[
+        str('external link'),
+        str(link_dict['origin']),
+        str(link_dict['destination']),
+        str(link_dict['status code']),
+        str(link_dict['content type']),
+        str(link_dict['time']),
+        str(link_dict['header location']),
+        str(link_dict['error'])]
+        for link_dict in broken_external[1]
+    ]
+    file_i = report_generating.ReportCreator(path_of_excel_workbook_generated)
+    file_i.append_report_data(report_generating.LABELS,
+                              BOLD &
+                              CENTER &
+                              DEFAULT_FONTNAME &
+                              DEFAULT_FONTSIZE)
+    if broken_external:
+        file_i.append_report_data(broken_external,
+                                  DEFAULT_FONTNAME &
+                                  DEFAULT_FONTSIZE)
+    if broken_internal:
+        file_i.append_report_data(broken_internal,
+                                  DEFAULT_FONTNAME &
+                                  DEFAULT_FONTSIZE)
+    file_i.add_general_autofilter()
+    file_i.cell_width_autofitter()
+    file_i.safe_workbook()
+    return path_of_excel_workbook_generated
 
 
 def send_mail_with_excel_report_attached(email_address, path_to_report):
-    # this function sends the previously generated excel report to the
-    # responsible email address with a simple info body.
-    # It makes use of the report mailer from branch mo/mail_sending
     pass
 
 
@@ -180,4 +212,4 @@ def main(app, *args):
         broken_external = get_external_broken_links_in_plone_page(site_info)
 
         create_and_send_mailreport_to_plone_site_responible_person(
-            email_address, site_info, broken_internal, broken_external)
+            email_address, broken_internal, broken_external)
