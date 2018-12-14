@@ -11,8 +11,12 @@ tests_require = [
     'plone.testing',
     'pandas==0.22.0',
     'xlrd >= 0.9.0',
+<<<<<<< HEAD
     'requests',
     'xlsxwriter',
+=======
+    'requests'
+>>>>>>> Fix: Changes were reviewed earlier and merged at some point already
 ]
 
 extras_require = {
