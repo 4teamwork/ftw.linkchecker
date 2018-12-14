@@ -12,6 +12,7 @@ tests_require = [
     'pandas==0.22.0',
     'xlrd >= 0.9.0',
     'requests',
+    'xlsxwriter',
 ]
 
 extras_require = {
