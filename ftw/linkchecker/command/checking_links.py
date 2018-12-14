@@ -1,10 +1,10 @@
 from AccessControl.SecurityManagement import newSecurityManager
+from Products.CMFPlone.interfaces import IPloneSiteRoot
+from ftw.linkchecker import linkchecker
 from plone import api
-from plone.app.textfield.interfaces import IRichText
 from plone.app.textfield.interfaces import IRichText
 from plone.dexterity.interfaces import IDexterityFTI
 from plone.dexterity.utils import getAdditionalSchemata
-from Products.CMFPlone.interfaces import IPloneSiteRoot
 from zc.relation.interfaces import ICatalog
 from zope.component import getUtility
 from zope.component import queryUtility
@@ -64,9 +64,8 @@ def get_external_broken_links_in_plone_page(site_info):
         links_on_a_plone_site.append(find_links_on_brain_fields(brain))
 
     in_field_links = [j for sub in links_on_a_plone_site for j in sub]
-    # check these links and validate
-    # this feature is developed in branch mo/external_link_fetcher
-    # presumably called: work_through_urls(in_field_links)
+    external_link_data = linkchecker.work_through_urls(in_field_links)
+    return external_link_data
 
 
 def extract_links_in_string(inputString):
@@ -138,7 +137,6 @@ def iter_fields(portal_type):
 
 
 def iter_schemata_for_protal_type(portal_type):
-
     if queryUtility(IDexterityFTI, name=portal_type):
         # is dexterity
         fti = getUtility(IDexterityFTI, name=portal_type)
