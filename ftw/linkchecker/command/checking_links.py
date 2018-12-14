@@ -16,6 +16,7 @@ from zope.schema import getFieldsInOrder
 import AccessControl
 import re
 
+from ftw.linkchecker import report_mailer
 from ftw.linkchecker.cell_format import BOLD
 from ftw.linkchecker.cell_format import CENTER
 from ftw.linkchecker.cell_format import DEFAULT_FONTNAME
@@ -155,10 +156,10 @@ def iter_schemata_for_protal_type(portal_type):
 
 
 def create_and_send_mailreport_to_plone_site_responible_person(
-        email_address, broken_internal, broken_external):
+        email_address, broken_internal, broken_external, site_info):
     path_to_report = create_excel_report_and_return_filepath(broken_internal,
                                                              broken_external)
-    send_mail_with_excel_report_attached(email_address, path_to_report)
+    send_mail_with_excel_report_attached(email_address, path_to_report, site_info)
 
 
 def create_excel_report_and_return_filepath(broken_internal, broken_external):
@@ -197,8 +198,16 @@ def create_excel_report_and_return_filepath(broken_internal, broken_external):
     return path_of_excel_workbook_generated
 
 
-def send_mail_with_excel_report_attached(email_address, path_to_report):
-    pass
+def send_mail_with_excel_report_attached(email_address, path_to_report, site_info):
+    email_subject = 'Linkchecker Report'
+    email_message = 'Dear Site Administrator, \n\n\
+                Please check out the linkchecker report attached to this mail.\n\n\
+                Friendly regards,\n\
+                your 4teamwork linkcheck reporter'
+    portal = api.content.get(site_info['path'])
+    report_mailer_instance = report_mailer.MailSender(portal)
+    report_mailer_instance.send_feedback(
+        email_subject, email_message, email_address, path_to_report)
 
 
 def main(app, *args):
@@ -212,4 +221,4 @@ def main(app, *args):
         broken_external = get_external_broken_links_in_plone_page(site_info)
 
         create_and_send_mailreport_to_plone_site_responible_person(
-            email_address, broken_internal, broken_external)
+            email_address, broken_internal, broken_external, site_info)

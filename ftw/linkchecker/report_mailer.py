@@ -10,7 +10,6 @@ import plone.api
 
 
 class MailSender(object):
-
     def __init__(self, portal=None):
         if not portal:
             self.app = globals()['app']
