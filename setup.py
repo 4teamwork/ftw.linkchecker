@@ -1,5 +1,7 @@
-from setuptools import setup, find_packages
 import os
+
+from setuptools import find_packages
+from setuptools import setup
 
 version = '1.0.0.dev0'
 
@@ -11,12 +13,8 @@ tests_require = [
     'plone.testing',
     'pandas==0.22.0',
     'xlrd >= 0.9.0',
-<<<<<<< HEAD
     'requests',
     'xlsxwriter',
-=======
-    'requests'
->>>>>>> Fix: Changes were reviewed earlier and merged at some point already
 ]
 
 extras_require = {
