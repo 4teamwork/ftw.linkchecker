@@ -69,10 +69,8 @@ def get_external_broken_links_in_plone_page(site_info):
     brains = portal_catalog.unrestrictedSearchResults()
     links_on_a_plone_site = []
     for brain in brains:
-        links_on_a_plone_site.append(find_links_on_brain_fields(brain))
-
-    in_field_links = [j for sub in links_on_a_plone_site for j in sub]
-    external_link_data = linkchecker.work_through_urls(in_field_links)
+        links_on_a_plone_site.extend(find_links_on_brain_fields(brain))
+    external_link_data = linkchecker.work_through_urls(links_on_a_plone_site)
     return external_link_data
 
 
@@ -83,29 +81,32 @@ def extract_links_in_string(inputString):
     return re.findall(regex, inputString)
 
 
+
+def add_link_info_to_links(content, link_information_collection, obj):
+
+    if not isinstance(content, basestring):
+        return
+    links = extract_links_in_string(content)
+    if not links:
+        # only continue if there are any links
+        return
+
+    for link in links:
+        link_information_collection.append({
+            'origin': obj.absolute_url_path(),
+            'destination': link,
+        })
+
+
 def find_links_on_brain_fields(brain):
     obj = brain.getObject()
-    links_from_dexterity = []
-    links_from_non_dexterity = []
-
+    link_information_collection = []
 
     if not queryUtility(IDexterityFTI, name=obj.portal_type):
         # is not dexterity
         for field in obj.Schema().fields():
             content = field.getRaw(obj)
-            if not isinstance(content, basestring):
-                continue
-
-            links = extract_links_in_string(content)
-            if not links:
-                # only continue if there are any links
-                continue
-            links_from_non_dexterity = []
-            for link in links:
-                links_from_non_dexterity.append({
-                    'origin': obj.absolute_url_path(),
-                    'destination': link,
-                })
+            add_link_info_to_links(content, link_information_collection, obj)
 
     if queryUtility(IDexterityFTI, name=obj.portal_type):
         for name, field, schemata in iter_fields(obj.portal_type):
@@ -118,24 +119,9 @@ def find_links_on_brain_fields(brain):
                 continue
 
             orig_text = textfield.raw
+            add_link_info_to_links(orig_text, link_information_collection, obj)
 
-            if not isinstance(orig_text, basestring):
-                continue
-
-            links = extract_links_in_string(orig_text)
-            if not links:
-                # only continue if there are any links
-                continue
-            links_from_dexterity = []
-            for link in links:
-                links_from_dexterity.append({
-                    'origin': obj.absolute_url_path(),
-                    'destination': link,
-                })
-
-    urls_info_two_dim_list = [links_from_non_dexterity, links_from_dexterity]
-    urls_info_dicts = [j for sub in urls_info_two_dim_list for j in sub]
-    return urls_info_dicts
+    return link_information_collection
 
 
 def iter_fields(portal_type):
