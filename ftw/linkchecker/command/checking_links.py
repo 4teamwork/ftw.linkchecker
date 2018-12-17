@@ -153,6 +153,23 @@ def append_information_for_links_uids_paths(link_and_relation_information, obj,
     return link_and_relation_information
 
 
+
+def add_link_info_to_links(content, link_information_collection, obj):
+
+    if not isinstance(content, basestring):
+        return
+    links = extract_links_in_string(content)
+    if not links:
+        # only continue if there are any links
+        return
+
+    for link in links:
+        link_information_collection.append({
+            'origin': obj.absolute_url_path(),
+            'destination': link,
+        })
+
+
 def find_links_on_brain_fields(brain):
     obj = brain.getObject()
     link_and_relation_information = []
