@@ -66,8 +66,7 @@ def catalog_lookup(relation_catalog):
 
 def get_external_broken_links_in_plone_page(site_info):
     portal_catalog = api.portal.get_tool('portal_catalog')
-    query = {'path': site_info['path'], 'portal_type': 'Document'}
-    brains = portal_catalog.unrestrictedSearchResults(query)
+    brains = portal_catalog.unrestrictedSearchResults()
     links_on_a_plone_site = []
     for brain in brains:
         links_on_a_plone_site.append(find_links_on_brain_fields(brain))
@@ -88,6 +87,7 @@ def find_links_on_brain_fields(brain):
     obj = brain.getObject()
     links_from_dexterity = []
     links_from_non_dexterity = []
+
 
     if not queryUtility(IDexterityFTI, name=obj.portal_type):
         # is not dexterity
