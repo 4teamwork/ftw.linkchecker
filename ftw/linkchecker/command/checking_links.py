@@ -153,12 +153,33 @@ def append_information_for_links_uids_paths(link_and_relation_information, obj,
     return link_and_relation_information
 
 
+def extract_relation_uids_in_string(input_string):
+    regex = "resolveuid/\w{32}"
+    uids_long_form = re.findall(regex, input_string)
+    uids = []
+    for uid in uids_long_form:
+        uids.extend(uid.split('/')[1])
+    return uids
+
+def get_broken_relation_information_by_uids(relation_uids, obj):
+    information_of_broken_relations = []
+    for relation_uid in relation_uids:
+        if api.content.get(UID=relation_uid):
+            information_of_broken_relations.append({
+                'origin': obj.absolute_url_path(),
+                'destination': 'Ds weis dr Gugger'
+            })
+    return information_of_broken_relations
 
 def add_link_info_to_links(content, link_information_collection, obj):
 
     if not isinstance(content, basestring):
         return
     links = extract_links_in_string(content)
+    relation_uids = extract_relation_uids_in_string(content)
+    get_broken_relation_information_by_uids(relation_uids, obj)
+    import pdb; pdb.set_trace()
+
     if not links:
         # only continue if there are any links
         return
