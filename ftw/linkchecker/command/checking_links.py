@@ -255,37 +255,49 @@ def extract_relation_uids_in_string(input_string):
     uids_long_form = re.findall(regex, input_string)
     uids = []
     for uid in uids_long_form:
-        uids.extend(uid.split('/')[1])
+        uids.append(uid.split('/')[1])
     return uids
+
 
 def get_broken_relation_information_by_uids(relation_uids, obj):
     information_of_broken_relations = []
     for relation_uid in relation_uids:
-        if api.content.get(UID=relation_uid):
-            information_of_broken_relations.append({
-                'origin': obj.absolute_url_path(),
-                'destination': 'Ds weis dr Gugger'
-            })
+        if not api.content.get(UID=relation_uid):
+            information_of_broken_relations.append([
+                'internal',
+                obj.absolute_url_path(),
+                'Unknown location',
+                'Not specified',
+                'Not specified',
+                'Not specified',
+                'Not specified',
+                'Not specified',
+            ])
     return information_of_broken_relations
 
-def add_link_info_to_links(content, link_information_collection, obj):
 
+def add_link_info_to_links(content, link_and_relation_information, obj):
     if not isinstance(content, basestring):
         return
+    # find links in page
     links = extract_links_in_string(content)
+    # find and add broken relations to link_and_relation_information
     relation_uids = extract_relation_uids_in_string(content)
-    get_broken_relation_information_by_uids(relation_uids, obj)
-    import pdb; pdb.set_trace()
+    broken_relations = get_broken_relation_information_by_uids(relation_uids,
+                                                               obj)
+    link_and_relation_information.extend(broken_relations)
 
     if not links:
         # only continue if there are any links
         return
 
     for link in links:
-        link_information_collection.append({
-            'origin': obj.absolute_url_path(),
-            'destination': link,
-        })
+        link_and_relation_information.append([
+            'external',
+            obj.absolute_url_path(),
+            link,
+        ])
+    return link_and_relation_information
 
 
 def find_links_on_brain_fields(brain):
