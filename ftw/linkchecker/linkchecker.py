@@ -18,7 +18,7 @@ def get_uri_response(url_item):
     response = None
     start_time = millis()
     try:
-        response = requests.head(url_item.get('destination'),
+        response = requests.head(url_item[2],
                                  timeout=TIMEOUT,
                                  headers=headers,
                                  allow_redirects=False)
@@ -33,14 +33,19 @@ def get_uri_response(url_item):
 
     time = millis() - start_time
 
-    result = {
-        'origin': url_item.get('origin'),
-        'destination': url_item.get('destination'),
-        'error': error,
-        'time': time,
-    }
+    attachment = extract_header_information(response)
 
-    result.update(extract_header_information(response))
+    result = [
+        url_item[0],
+        url_item[1],
+        url_item[2],
+        attachment['status code'],
+        attachment['content type'],
+        time,
+        attachment['header location'],
+        error,
+    ]
+
     return result
 
 
@@ -49,21 +54,21 @@ def limit_cpu():
 
 
 def extract_header_information(response):
-    attachement = {
+    attachment = {
         'status code': None,
         'header location': None,
         'content type': None,
     }
     if not response:
-        return attachement
+        return attachment
 
-    attachement['status code'] = response.status_code
+    attachment['status code'] = response.status_code
 
     headers = response.headers
     if headers:
-        attachement['header location'] = headers.get('Location', None)
-        attachement['content type'] = headers.get('Content-Type', None)
-    return attachement
+        attachment['header location'] = headers.get('Location', None)
+        attachment['content type'] = headers.get('Content-Type', None)
+    return attachment
 
 
 def work_through_urls(urls):

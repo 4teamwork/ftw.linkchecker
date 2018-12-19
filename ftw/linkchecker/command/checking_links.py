@@ -1,26 +1,24 @@
-import os
-import time
 from AccessControl.SecurityManagement import newSecurityManager
 from Products.CMFPlone.interfaces import IPloneSiteRoot
 from ftw.linkchecker import linkchecker
 from ftw.linkchecker import report_generating
-from plone import api
-from plone.app.textfield.interfaces import IRichText
-from plone.dexterity.interfaces import IDexterityFTI
-from plone.dexterity.utils import getAdditionalSchemata
-from zc.relation.interfaces import ICatalog
-from zope.component import getUtility
-from zope.component import queryUtility
-from zope.component.hooks import setSite
-from zope.schema import getFieldsInOrder
-import AccessControl
-import re
-
 from ftw.linkchecker import report_mailer
 from ftw.linkchecker.cell_format import BOLD
 from ftw.linkchecker.cell_format import CENTER
 from ftw.linkchecker.cell_format import DEFAULT_FONTNAME
 from ftw.linkchecker.cell_format import DEFAULT_FONTSIZE
+from plone import api
+from plone.app.textfield.interfaces import IRichText
+from plone.dexterity.interfaces import IDexterityFTI
+from plone.dexterity.utils import getAdditionalSchemata
+from zope.component import getUtility
+from zope.component import queryUtility
+from zope.component.hooks import setSite
+from zope.schema import getFieldsInOrder
+import AccessControl
+import os
+import re
+import time
 
 
 def get_plone_sites_information(app):
@@ -44,34 +42,30 @@ def setup_plone(app, site_info):
     setSite(plone_site)
 
 
-def get_broken_relations_in_plone_page():
-    relation_catalog = getUtility(ICatalog)
-    catalog_lookup(relation_catalog)
-    # there's need to also check another catalog
-
-
-def catalog_lookup(relation_catalog):
-    x = relation_catalog
-    relations = list(x.findRelations())
-    relations_info = []
-    for relation in relations:
-        if relation.isBroken():
-            rel_info = {
-                'origin': relation.from_path,
-                'title': relation.from_object.Title()
-            }
-        relations_info.append(rel_info)
-    return relations_info
-
-
-def get_external_broken_links_in_plone_page(site_info):
+def get_broken_relations_and_links():
     portal_catalog = api.portal.get_tool('portal_catalog')
     brains = portal_catalog.unrestrictedSearchResults()
-    links_on_a_plone_site = []
+    site_links_and_relations = []
     for brain in brains:
-        links_on_a_plone_site.extend(find_links_on_brain_fields(brain))
-    external_link_data = linkchecker.work_through_urls(links_on_a_plone_site)
-    return external_link_data
+        site_links_and_relations.extend(find_links_on_brain_fields(brain))
+
+    external_links = [[x[0], x[1], x[2]] for x in site_links_and_relations
+                      if x[0] == 'external']
+    broken_relations = [[x[0], x[1], x[2], x[3], x[4], x[5], x[6], x[7], ] for
+                        x in site_links_and_relations
+                        if x[0] == 'internal']
+
+    external_link_data = linkchecker.work_through_urls(
+        external_links)
+
+    # create complete link and rel data list
+    complete_link_and_relation_data = []
+    for external_link in external_link_data[1]:
+        complete_link_and_relation_data.append(external_link)
+    for broken_relation in broken_relations:
+        complete_link_and_relation_data.append(broken_relation)
+
+    return [external_link_data[0], complete_link_and_relation_data]
 
 
 def extract_links_in_string(inputString):
@@ -86,47 +80,60 @@ def extract_relation_uids_in_string(input_string):
     uids_long_form = re.findall(regex, input_string)
     uids = []
     for uid in uids_long_form:
-        uids.extend(uid.split('/')[1])
+        uids.append(uid.split('/')[1])
     return uids
+
 
 def get_broken_relation_information_by_uids(relation_uids, obj):
     information_of_broken_relations = []
     for relation_uid in relation_uids:
-        if api.content.get(UID=relation_uid):
-            information_of_broken_relations.append({
-                'origin': obj.absolute_url_path(),
-                'destination': 'Ds weis dr Gugger'
-            })
+        if not api.content.get(UID=relation_uid):
+            information_of_broken_relations.append([
+                'internal',
+                obj.absolute_url_path(),
+                'Unknown location',
+                'Not specified',
+                'Not specified',
+                'Not specified',
+                'Not specified',
+                'Not specified',
+            ])
     return information_of_broken_relations
 
-def add_link_info_to_links(content, link_information_collection, obj):
 
+def add_link_info_to_links(content, link_and_relation_information, obj):
     if not isinstance(content, basestring):
         return
+    # find links in page
     links = extract_links_in_string(content)
+    # find and add broken relations to link_and_relation_information
     relation_uids = extract_relation_uids_in_string(content)
-    get_broken_relation_information_by_uids(relation_uids, obj)
+    broken_relations = get_broken_relation_information_by_uids(relation_uids,
+                                                               obj)
+    link_and_relation_information.extend(broken_relations)
 
     if not links:
         # only continue if there are any links
         return
 
     for link in links:
-        link_information_collection.append({
-            'origin': obj.absolute_url_path(),
-            'destination': link,
-        })
+        link_and_relation_information.append([
+            'external',
+            obj.absolute_url_path(),
+            link,
+        ])
+    return link_and_relation_information
 
 
 def find_links_on_brain_fields(brain):
     obj = brain.getObject()
-    link_information_collection = []
+    link_and_relation_information = []
 
     if not queryUtility(IDexterityFTI, name=obj.portal_type):
         # is not dexterity
         for field in obj.Schema().fields():
             content = field.getRaw(obj)
-            add_link_info_to_links(content, link_information_collection, obj)
+            add_link_info_to_links(content, link_and_relation_information, obj)
 
     if queryUtility(IDexterityFTI, name=obj.portal_type):
         for name, field, schemata in iter_fields(obj.portal_type):
@@ -139,9 +146,10 @@ def find_links_on_brain_fields(brain):
                 continue
 
             orig_text = textfield.raw
-            add_link_info_to_links(orig_text, link_information_collection, obj)
+            add_link_info_to_links(orig_text, link_and_relation_information,
+                                   obj)
 
-    return link_information_collection
+    return link_and_relation_information
 
 
 def iter_fields(portal_type):
@@ -162,54 +170,52 @@ def iter_schemata_for_protal_type(portal_type):
 
 
 def create_and_send_mailreport_to_plone_site_responible_person(
-        email_address, broken_internal, broken_external, site_info):
-    path_to_report = create_excel_report_and_return_filepath(broken_internal,
-                                                             broken_external)
-    send_mail_with_excel_report_attached(email_address, path_to_report, site_info)
+        email_address, broken_relations_and_links, site_info,
+        total_time_fetching_external):
+    path_to_report = create_excel_report_and_return_filepath(
+        broken_relations_and_links)
+    send_mail_with_excel_report_attached(email_address, path_to_report,
+                                         site_info,
+                                         total_time_fetching_external)
 
 
-def create_excel_report_and_return_filepath(broken_internal, broken_external):
+def create_excel_report_and_return_filepath(broken_relations_and_links):
+    # make sure every element is a string
+    broken_relations_and_links = map(lambda item: map(str, item),
+                                     broken_relations_and_links)
     filename = 'linkchecker_report_{}.xlsx'.format(
         time.strftime('%Y_%b_%d_%H%M%S', time.gmtime()))
     current_path = os.path.dirname(os.path.abspath(__file__))
     path_of_excel_workbook_generated = current_path + '/reports/' + filename
-    broken_external = [[
-        str('external link'),
-        str(link_dict['origin']),
-        str(link_dict['destination']),
-        str(link_dict['status code']),
-        str(link_dict['content type']),
-        str(link_dict['time']),
-        str(link_dict['header location']),
-        str(link_dict['error'])]
-        for link_dict in broken_external[1]
-    ]
+
     file_i = report_generating.ReportCreator(path_of_excel_workbook_generated)
     file_i.append_report_data(report_generating.LABELS,
                               BOLD &
                               CENTER &
                               DEFAULT_FONTNAME &
                               DEFAULT_FONTSIZE)
-    if broken_external:
-        file_i.append_report_data(broken_external,
+    if broken_relations_and_links:
+        file_i.append_report_data(broken_relations_and_links,
                                   DEFAULT_FONTNAME &
                                   DEFAULT_FONTSIZE)
-    if broken_internal:
-        file_i.append_report_data(broken_internal,
-                                  DEFAULT_FONTNAME &
-                                  DEFAULT_FONTSIZE)
+
     file_i.add_general_autofilter()
     file_i.cell_width_autofitter()
     file_i.safe_workbook()
     return path_of_excel_workbook_generated
 
 
-def send_mail_with_excel_report_attached(email_address, path_to_report, site_info):
+def send_mail_with_excel_report_attached(email_address, path_to_report,
+                                         site_info,
+                                         total_time_fetching_external):
     email_subject = 'Linkchecker Report'
-    email_message = 'Dear Site Administrator, \n\n\
-                Please check out the linkchecker report attached to this mail.\n\n\
-                Friendly regards,\n\
-                your 4teamwork linkcheck reporter'
+    email_message = '''
+    Dear Site Administrator, \n\n
+    Please check out the linkchecker report attached to this mail.\n\n
+    It took {}ms to fetch the external links for this report.\n\n
+    Friendly regards,\n
+    your 4teamwork linkcheck reporter\n\n\n
+    '''.format(total_time_fetching_external)
     portal = api.content.get(site_info['path'])
     report_mailer_instance = report_mailer.MailSender(portal)
     report_mailer_instance.send_feedback(
@@ -223,8 +229,10 @@ def main(app, *args):
 
         setup_plone(app, site_info)
 
-        broken_internal = get_broken_relations_in_plone_page()
-        broken_external = get_external_broken_links_in_plone_page(site_info)
+        broken_relations_and_links_info = get_broken_relations_and_links()
+        broken_relations_and_links = broken_relations_and_links_info[1]
+        total_time_fetching_external = broken_relations_and_links_info[0]
 
         create_and_send_mailreport_to_plone_site_responible_person(
-            email_address, broken_internal, broken_external, site_info)
+            email_address, broken_relations_and_links, site_info,
+            total_time_fetching_external)
