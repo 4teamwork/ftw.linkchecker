@@ -1,10 +1,8 @@
 from ftw.linkchecker.testing import LINKCHECKER_FUNCTIONAL
-from lxml import etree
 from plone.app.testing import setRoles
 from plone.app.testing import TEST_USER_ID
-from unittest2 import TestCase
-import os.path
 import transaction
+from unittest2 import TestCase
 
 
 class FunctionalTestCase(TestCase):
