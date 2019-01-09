@@ -15,6 +15,7 @@ tests_require = [
     'xlrd >= 0.9.0',
     'requests',
     'xlsxwriter',
+    'ftw.simplelayout',
 ]
 
 extras_require = {
