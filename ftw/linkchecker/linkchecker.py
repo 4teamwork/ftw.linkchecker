@@ -35,18 +35,21 @@ def get_uri_response(url_item):
 
     attachment = extract_header_information(response)
 
-    result = [
-        url_item[0],
-        url_item[1],
-        url_item[2],
-        attachment['status code'],
-        attachment['content type'],
-        time,
-        attachment['header location'],
-        error,
-    ]
-
-    return result
+    if attachment['status code'] == 200 \
+            or 'resolveuid' in url_item[2] \
+            or 'plone_control_panel' in url_item[2]:
+        return []
+    else:
+        return [
+            url_item[0],
+            url_item[1],
+            url_item[2],
+            attachment['status code'],
+            attachment['content type'],
+            time,
+            attachment['header location'],
+            error,
+        ]
 
 
 def limit_cpu():
@@ -75,5 +78,6 @@ def work_through_urls(urls):
     pool = Pool(initializer=limit_cpu)
     start_time = millis()
     results = pool.map(get_uri_response, urls)
+    results_excluding_empty_lists = [x for x in results if x]
     total_time = millis() - start_time
-    return [total_time, results]
+    return [total_time, results_excluding_empty_lists]
