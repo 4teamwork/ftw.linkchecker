@@ -12,6 +12,15 @@ class FunctionalTestCase(TestCase):
         self.portal = self.layer['portal']
         self.request = self.layer['request']
 
-    def grant(self, *roles):
-        setRoles(self.portal, TEST_USER_ID, list(roles))
+    def grant(self, portal=None, *roles):
+        if isinstance(portal, str):
+            roles.append(portal)
+            portal = self.portal
+        elif isinstance(portal, list) or isinstance(portal, tuple):
+            roles = list(portal)
+            portal = self.portal
+        else:
+            portal = portal or self.portal
+
+        setRoles(portal, TEST_USER_ID, list(roles))
         transaction.commit()
