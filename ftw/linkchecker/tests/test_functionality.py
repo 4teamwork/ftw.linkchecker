@@ -11,6 +11,7 @@ from ftw.linkchecker.cell_format import DEFAULT_FONTSIZE
 from ftw.linkchecker.testing import ADDITIONAL_PAGES_TO_SETUP
 from ftw.linkchecker.tests import FunctionalTestCase
 from ftw.testbrowser import browsing
+from ftw.testbrowser.pages import factoriesmenu
 from ftw.testing.mailing import Mailing
 from zope.component.hooks import setSite
 import AccessControl
@@ -106,8 +107,8 @@ class TestLinkChecker(FunctionalTestCase):
         # tearDown
         Mailing(self.layer['portal']).tear_down()
 
-    def generate_test_data_excel_workbook(self,
-                                          path_of_excel_workbook_generated):
+    @staticmethod
+    def generate_test_data_excel_workbook(path_of_excel_workbook_generated):
         exemplar_report_data = [
             ['Some', 'example', 'data', 'to', 'fill', 'the', 'excel', 'sheet'],
             ['Some', 'example', 'data', 'to', 'fill', 'the', 'excel', 'sheet'],
@@ -135,18 +136,31 @@ class TestLinkChecker(FunctionalTestCase):
         file_i.safe_workbook()
 
     def set_up_test_environment(self, browser):
-        """Set up a Plone Site having working and broken Links as well as
-        working and broken relations.
-        We creates the mentioned in the type 'link' as well as inside of
-        text fields.
+        """Set up two plone sites. Both plone sites having the same content.
+        Plone sites have working and broken relations and external links.
         """
         for portal in [self.portal, self.portal2]:
             setSite(portal)
-            self.grant('Manager')
-            page_1_1 = create(Builder('sl content page').titled(u'Page One'))
-            browser.login().visit(page_1_1)
+            self.grant(portal, 'Manager')
+            # add various content pages within plone site
+            pages = [create(
+                Builder('sl content page').titled(u'Page {}'.format(index)))
+                for index in range(3)]
+            urls = ['https://www.google.com', 'https://www.4teamwork.ch']
+            browser.login()
 
-            setSite(self.portal2)
-            self.grant('Manager')
-            page_2_1 = create(Builder('sl content page').titled(u'First Page'))
-            browser.login().visit(page_2_1)
+            for page in pages:
+                browser.visit(page)
+                for index, url in enumerate(urls):
+                    self.add_sl_TextBlock_having_external_link(page, url,
+                                                               browser, index)
+
+    @staticmethod
+    def add_sl_TextBlock_having_external_link(current_page, link,
+                                              browser, index):
+        factoriesmenu.add('TextBlock', browser)
+        browser.fill({
+            'Title': str(index).decode("utf-8"),
+            'External URL': link,
+        }).save()
+        browser.visit(current_page)
