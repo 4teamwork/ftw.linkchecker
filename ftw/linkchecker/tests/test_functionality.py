@@ -142,17 +142,10 @@ class TestLinkChecker(FunctionalTestCase):
         for portal in [self.portal, self.portal2]:
             setSite(portal)
             self.grant('Manager')
+            page_1_1 = create(Builder('sl content page').titled(u'Page One'))
+            browser.login().visit(page_1_1)
 
-            page_one = create(Builder('sl content page').titled(u'Page One'))
-            page_two = create(Builder('sl content page').titled(u'Page Two'))
-            page_three = create(Builder('sl content page').titled(u'Page One'))
-
-            browser.login().visit(page_one)
-            import pdb;
-            pdb.set_trace()
-            self.file = create(Builder('file')
-                               .within(page_one)
-                               .with_dummy_content()
-                               .having(title='Test File'))
-
-            # setSite(self.portal2)
+            setSite(self.portal2)
+            self.grant('Manager')
+            page_2_1 = create(Builder('sl content page').titled(u'First Page'))
+            browser.login().visit(page_2_1)
