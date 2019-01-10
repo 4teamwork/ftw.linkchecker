@@ -24,8 +24,12 @@ from plone.app.testing.interfaces import (
     SITE_OWNER_NAME,
 )
 
-SECOND_PLONE_SITE_ID = 'plone2'
-SECOND_PLONE_SITE_TITLE = u"Plone site Two"
+ADDITIONAL_PAGES_TO_SETUP = [
+    {
+        'page_id': 'plone2',
+        'page_title': u'Plone site two',
+    },
+]
 
 
 class PloneFixtureChild(PloneFixture):
@@ -40,20 +44,23 @@ class PloneFixtureChild(PloneFixture):
         with z2.zopeApp() as app:
             self.setUpProducts(app)
             self.setUpDefaultContent(app)
-            self.setUpDefaultContent_AdditionalPage(app)
+            for ADDITIONAL_PAGE in ADDITIONAL_PAGES_TO_SETUP:
+                self.setUpDefaultContent_AdditionalPage(app, ADDITIONAL_PAGE[
+                    'page_id'], ADDITIONAL_PAGE['page_title'])
 
-    def setUpDefaultContent_AdditionalPage(self, app):
+    def setUpDefaultContent_AdditionalPage(self, app, additional_page_id,
+                                           additional_page_title):
         z2.login(app['acl_users'], SITE_OWNER_NAME)
         from Products.CMFPlone.factory import addPloneSite
         # Set up the second page with another ID here.
-        addPloneSite(app, SECOND_PLONE_SITE_ID,
-                     title=SECOND_PLONE_SITE_TITLE,
+        addPloneSite(app, additional_page_id,
+                     title=additional_page_title,
                      setup_content=False,
                      default_language=DEFAULT_LANGUAGE,
                      extension_ids=self.extensionProfiles,
                      )
-        app[SECOND_PLONE_SITE_ID]['portal_workflow'].setDefaultChain('')
-        pas = app[SECOND_PLONE_SITE_ID]['acl_users']
+        app[additional_page_id]['portal_workflow'].setDefaultChain('')
+        pas = app[additional_page_id]['acl_users']
         pas.source_users.addUser(
             TEST_USER_ID,
             TEST_USER_NAME,
@@ -90,10 +97,11 @@ class LinkcheckerLayer(PloneSandboxLayer):
         self['configurationContext'] = configurationContext = (
             zca.stackConfigurationContext(self.get('configurationContext'),
                                           name=contextName))
-        ########################
-        # call ploneSite() twice (for both pages)
-        #########################
-        for plone_site_id in [PLONE_SITE_ID, SECOND_PLONE_SITE_ID]:
+        # call ploneSite() for all pages in dict.
+        plone_site_ids = [PLONE_SITE_ID]
+        plone_site_ids.extend(additional_page['page_id'] for additional_page in
+                              ADDITIONAL_PAGES_TO_SETUP)
+        for plone_site_id in plone_site_ids:
             with self.ploneSite(plone_site_id) as portal:
                 from zope.site.hooks import setSite, setHooks
                 setHooks()

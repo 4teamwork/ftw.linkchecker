@@ -8,7 +8,7 @@ from ftw.linkchecker.cell_format import BOLD
 from ftw.linkchecker.cell_format import CENTER
 from ftw.linkchecker.cell_format import DEFAULT_FONTNAME
 from ftw.linkchecker.cell_format import DEFAULT_FONTSIZE
-from ftw.linkchecker.testing import SECOND_PLONE_SITE_ID
+from ftw.linkchecker.testing import ADDITIONAL_PAGES_TO_SETUP
 from ftw.linkchecker.tests import FunctionalTestCase
 from ftw.testbrowser import browsing
 from ftw.testing.mailing import Mailing
@@ -26,7 +26,8 @@ class TestLinkChecker(FunctionalTestCase):
 
     def setUp(self):
         super(TestLinkChecker, self).setUp()
-        self.portal2 = aq_parent(self.portal).get(SECOND_PLONE_SITE_ID)
+        self.portal2 = aq_parent(self.portal).get(
+            ADDITIONAL_PAGES_TO_SETUP[0]['page_id'])
 
     @browsing
     def test_finds_links_in_plone_site(self, browser):
