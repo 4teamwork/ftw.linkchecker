@@ -1,3 +1,4 @@
+from plone.testing.z2 import ZSERVER_FIXTURE
 from Acquisition import aq_parent
 from ftw.builder.testing import BUILDER_LAYER
 from ftw.builder.testing import functional_session_factory
@@ -75,7 +76,7 @@ PLONE_FIXTURE = PloneFixtureChild()
 
 
 class LinkcheckerLayer(PloneSandboxLayer):
-    defaultBases = (PLONE_FIXTURE, BUILDER_LAYER)
+    defaultBases = (PLONE_FIXTURE, BUILDER_LAYER, ZSERVER_FIXTURE)
 
     def setUpZope(self, app, configurationContext):
         xmlconfig.string(
