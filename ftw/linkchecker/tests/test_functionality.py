@@ -36,11 +36,47 @@ class TestLinkChecker(FunctionalTestCase):
         """Checks if broken relations in page are found.
         """
         self.set_up_test_environment(browser)
-        plone_sites_information = {
+        site_administrator_emails = {
             "plone": "hugo.boss@4teamwork.ch",
-            "plone2": "berta.huber@4teamwork.ch"
+            "plone2": "berta.huber@gmail.com"
         }
         app = self.portal.aq_parent
+
+        plone_site_objs = checking_links.get_plone_sites_information(app)
+
+        self.assertIn(
+            self.portal,
+            plone_site_objs,
+            'It is expected that the first test plone site is in the list of'
+            'plone sites found.')
+
+        self.assertIn(
+            self.portal2,
+            plone_site_objs,
+            'It is expected that the second test plone site is in the list of'
+            'plone sites found.')
+
+        plone_site_id_0 = plone_site_objs[0].getId()
+        email_address_0 = site_administrator_emails[plone_site_id_0]
+
+        plone_site_id_1 = plone_site_objs[1].getId()
+        email_address_1 = site_administrator_emails[plone_site_id_1]
+
+        self.assertEqual(
+            email_address_0,
+            'hugo.boss@4teamwork.ch',
+            'It is expected that the email address for page 0 is corresponding'
+            'to its test site administrators email (hugo.boss@4teamwork.ch).')
+
+        self.assertEqual(
+            email_address_1,
+            'berta.huber@gmail.com',
+            'It is expected that the email address for page 1 is corresponding'
+            'to its test site administrators email (berta.huber@gmail.com).')
+
+        checking_links.setup_plone(app, plone_site_objs[0])
+        broken_relations_and_links_info = checking_links.get_broken_relations_and_links()
+
         # TODO: testcases following checking_links.main actions
 
     def test_if_excel_generator_adds_content_correctly(self):
