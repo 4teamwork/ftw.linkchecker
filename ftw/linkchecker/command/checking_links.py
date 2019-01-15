@@ -13,6 +13,7 @@ from plone import api
 from plone.app.textfield.interfaces import IRichText
 from plone.dexterity.interfaces import IDexterityFTI
 from plone.dexterity.utils import getAdditionalSchemata
+from urlparse import urlparse
 from z3c.relationfield.interfaces import IRelation
 from zope.component import getUtility
 from zope.component import queryUtility
@@ -67,12 +68,34 @@ def get_broken_relations_and_links():
     return [external_link_data[0], complete_link_and_relation_data]
 
 
-def extract_links_in_string(inputString):
+def extract_links_in_string(inputString, obj):
     # search for href and src
     regex = r"(href=['\"]?([^'\" >]+))|(src=['\"]?([^'\" >]+))"
     raw_results = re.findall(regex, inputString)
     # we want to exclude links starting with @@
     return [url[1] for url in raw_results if not url[1].startswith('@@')]
+
+    output_urls = []
+    output_paths = []
+    for url in raw_results:
+        # use actual link in findall tuple.
+        url = url[1]
+        if url.startswith('/'):
+            # handle links on plone site root
+            if url.startswith('//'):
+                url = url[1:]
+            path = '/'.join(api.portal.get().getPhysicalPath()) + url
+            output_paths.append(path)
+        elif not urlparse(url).scheme:
+            # handle relative links and views
+            path = '/'.join(
+                obj.aq_parent.getPhysicalPath()) + '/' + url.lstrip('./')
+            output_paths.append(path)
+        else:
+            # add all the other cases
+            output_urls.append(url)
+
+    return [output_urls, output_paths]
 
 
 def extract_relation_uids_in_string(input_string):
@@ -109,15 +132,17 @@ def get_broken_relation_information(uids_or_origin_path, obj,
     return information_of_broken_relations
 
 
-def extract_links_and_relations(content):
+def extract_links_and_relations(content, obj):
     if not isinstance(content, basestring):
         return
     # find links in page
-    links = extract_links_in_string(content)
+    links_and_paths = extract_links_in_string(content, obj)
     # find and add broken relations to link_and_relation_information
     relation_uids = extract_relation_uids_in_string(content)
 
-    return [links, relation_uids]
+    links = links_and_paths[0]
+    paths = links_and_paths[1]
+    return [links, relation_uids, paths]
 
 
 def append_information_for_links_uids_paths(link_and_relation_information, obj,
@@ -309,15 +334,19 @@ def find_links_on_brain_fields(brain):
         for field in obj.Schema().fields():
             content = field.getRaw(obj)
             links_and_relations_from_rich_text = extract_links_and_relations(
-                content)
+                content, obj)
             links = links_and_relations_from_rich_text[0]
             uids = links_and_relations_from_rich_text[1]
+            paths = links_and_relations_from_rich_text[2]
             append_information_for_links_uids_paths(
                 link_and_relation_information, obj,
                 external_links=links)
             append_information_for_links_uids_paths(
                 link_and_relation_information, obj,
                 relation_uids=uids)
+            append_information_for_links_uids_paths(
+                link_and_relation_information, obj,
+                relation_paths=paths)
 
     if queryUtility(IDexterityFTI, name=obj.portal_type):
         for name, field, schemata in iter_fields(obj.portal_type):
@@ -340,15 +369,19 @@ def find_links_on_brain_fields(brain):
             elif IRichText.providedBy(field):
                 orig_text = fieldvalue.raw
                 links_and_relations_from_rich_text = extract_links_and_relations(
-                    orig_text)
+                    orig_text, obj)
                 links = links_and_relations_from_rich_text[0]
                 uids = links_and_relations_from_rich_text[1]
+                paths = links_and_relations_from_rich_text[2]
                 append_information_for_links_uids_paths(
                     link_and_relation_information, obj,
                     external_links=links)
                 append_information_for_links_uids_paths(
                     link_and_relation_information, obj,
                     relation_uids=uids)
+                append_information_for_links_uids_paths(
+                    link_and_relation_information, obj,
+                    relation_paths=paths)
 
     return link_and_relation_information
 
