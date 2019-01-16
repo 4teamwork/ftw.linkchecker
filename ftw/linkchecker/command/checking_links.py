@@ -95,7 +95,15 @@ def extract_links_in_string(inputString, obj):
             # add all the other cases
             output_urls.append(url)
 
-    return [output_urls, output_paths]
+    broken_paths = []
+    # only append broken paths
+    for path in output_paths:
+        try:
+            api.portal.get().unrestrictedTraverse(path)
+        except KeyError:
+            broken_paths.append(path)
+
+    return [output_urls, broken_paths]
 
 
 def extract_relation_uids_in_string(input_string):
@@ -112,13 +120,9 @@ def get_broken_relation_information(uids_or_origin_path, obj,
     information_of_broken_relations = []
 
     for uid_or_path in uids_or_origin_path:
-        if is_broken:
-            origin_path = uid_or_path
-        if not is_broken:
-            if api.content.get(UID=uid_or_path):
-                continue
-            else:
-                origin_path = obj.absolute_url_path(),
+        if not is_broken and api.content.get(UID=uid_or_path):
+            continue
+        origin_path = obj.absolute_url_path()
         information_of_broken_relations.append([
             'internal',
             origin_path,
@@ -147,7 +151,7 @@ def extract_links_and_relations(content, obj):
 
 def append_information_for_links_uids_paths(link_and_relation_information, obj,
                                             relation_uids=None,
-                                            relation_paths=None,
+                                            broken_relation_paths=None,
                                             external_links=None):
     # If there are any uids
     if relation_uids:
@@ -158,10 +162,11 @@ def append_information_for_links_uids_paths(link_and_relation_information, obj,
     # It there are any relation paths
     # They need to be tested with obj.isBroken() and come along with
     # is_broken=True. Otherwise it will fail!
-    if relation_paths:
-        broken_relations2 = get_broken_relation_information(relation_paths,
-                                                            obj,
-                                                            is_broken=True)
+    if broken_relation_paths:
+        broken_relations2 = get_broken_relation_information(
+            broken_relation_paths,
+            obj,
+            is_broken=True)
         link_and_relation_information.extend(broken_relations2)
     # If there are external_links
     if external_links:
@@ -325,6 +330,23 @@ def add_link_info_to_links(content, link_and_relation_information, obj):
     return link_and_relation_information
 
 
+def append_to_link_and_relation_information_for_different_link_types(
+        links_and_relations_from_rich_text, link_and_relation_information,
+        obj):
+    links = links_and_relations_from_rich_text[0]
+    uids = links_and_relations_from_rich_text[1]
+    paths = links_and_relations_from_rich_text[2]
+    append_information_for_links_uids_paths(
+        link_and_relation_information, obj,
+        external_links=links)
+    append_information_for_links_uids_paths(
+        link_and_relation_information, obj,
+        relation_uids=uids)
+    append_information_for_links_uids_paths(
+        link_and_relation_information, obj,
+        broken_relation_paths=paths)
+
+
 def find_links_on_brain_fields(brain):
     obj = brain.getObject()
     link_and_relation_information = []
@@ -335,18 +357,9 @@ def find_links_on_brain_fields(brain):
             content = field.getRaw(obj)
             links_and_relations_from_rich_text = extract_links_and_relations(
                 content, obj)
-            links = links_and_relations_from_rich_text[0]
-            uids = links_and_relations_from_rich_text[1]
-            paths = links_and_relations_from_rich_text[2]
-            append_information_for_links_uids_paths(
-                link_and_relation_information, obj,
-                external_links=links)
-            append_information_for_links_uids_paths(
-                link_and_relation_information, obj,
-                relation_uids=uids)
-            append_information_for_links_uids_paths(
-                link_and_relation_information, obj,
-                relation_paths=paths)
+            append_to_link_and_relation_information_for_different_link_types(
+                links_and_relations_from_rich_text,
+                link_and_relation_information, obj)
 
     if queryUtility(IDexterityFTI, name=obj.portal_type):
         for name, field, schemata in iter_fields(obj.portal_type):
@@ -359,7 +372,7 @@ def find_links_on_brain_fields(brain):
                 if fieldvalue.isBroken():
                     append_information_for_links_uids_paths(
                         link_and_relation_information, obj,
-                        relation_paths=[fieldvalue.from_path])
+                        broken_relation_paths=[fieldvalue.from_path])
 
             elif IURI.providedBy(field):
                 append_information_for_links_uids_paths(
@@ -370,18 +383,9 @@ def find_links_on_brain_fields(brain):
                 orig_text = fieldvalue.raw
                 links_and_relations_from_rich_text = extract_links_and_relations(
                     orig_text, obj)
-                links = links_and_relations_from_rich_text[0]
-                uids = links_and_relations_from_rich_text[1]
-                paths = links_and_relations_from_rich_text[2]
-                append_information_for_links_uids_paths(
-                    link_and_relation_information, obj,
-                    external_links=links)
-                append_information_for_links_uids_paths(
-                    link_and_relation_information, obj,
-                    relation_uids=uids)
-                append_information_for_links_uids_paths(
-                    link_and_relation_information, obj,
-                    relation_paths=paths)
+                append_to_link_and_relation_information_for_different_link_types(
+                    links_and_relations_from_rich_text,
+                    link_and_relation_information, obj)
 
     return link_and_relation_information
 
