@@ -72,8 +72,6 @@ def extract_links_in_string(inputString, obj):
     # search for href and src
     regex = r"(href=['\"]?([^'\" >]+))|(src=['\"]?([^'\" >]+))"
     raw_results = re.findall(regex, inputString)
-    # we want to exclude links starting with @@
-    return [url[1] for url in raw_results if not url[1].startswith('@@')]
 
     output_urls = []
     output_paths = []
@@ -86,6 +84,8 @@ def extract_links_in_string(inputString, obj):
                 url = url[1:]
             path = '/'.join(api.portal.get().getPhysicalPath()) + url
             output_paths.append(path)
+        elif url.startswith('resolveuid/'):
+            continue
         elif not urlparse(url).scheme:
             # handle relative links and views
             path = '/'.join(

@@ -81,6 +81,7 @@ class TestLinkChecker(FunctionalTestCase):
         paths_from = [list_element[1] for list_element in
                       broken_relations_and_links_info[1]]
 
+        # Test 1 - External link in link field
         self.assertIn(
             '/plone/page-0/0', paths_from,
             'Testing an invalid external link in IURI: We expect finding '
@@ -88,7 +89,6 @@ class TestLinkChecker(FunctionalTestCase):
             'is linking to an invalid link'
             '(http://localhost/plone/gibtsnicht).'
         )
-
         self.assertNotIn(
             '/plone/page-0/1', paths_from,
             'Testing valid external link in IURI: We expect not to find '
@@ -97,6 +97,7 @@ class TestLinkChecker(FunctionalTestCase):
             '(http://localhost/plone).'
         )
 
+        # Test 2 - Relation in relation field
         self.assertIn(
             '/plone/page-0/broken-relation', paths_from,
             'Testing an invalid relation in IRealtion: We expect finding '
@@ -104,7 +105,6 @@ class TestLinkChecker(FunctionalTestCase):
             'because it links a deleted plone site'
             '(http://localhost/plone/page-2).'
         )
-
         self.assertNotIn(
             '/plone/page-0/default-title', paths_from,
             'Testing valid relation in IRelation: We expect not to find '
@@ -113,20 +113,94 @@ class TestLinkChecker(FunctionalTestCase):
             '(http://localhost/plone/page-1).'
         )
 
+        # Test 3 - Relation in textarea (link like -> foo)
         self.assertIn(
-            '/plone/page-0/textblock-with-link-in-textarea-1', paths_from,
-            'Testing broken link in textarea: We expect finding '
-            '"/plone/page-0/textblock-with-link-in-textarea-1" in broken'
-            'relations_and_links_info because it links a broken link'
-            '(http://localhost:55001/plone/gibtsnicht).'
+            '/plone/page-3/a-textblock-link-not-using-the-browser-1',
+            paths_from,
+            'Testing broken relation in textarea: We expect finding'
+            '"/plone/page-3/a-textblock-link-not-using-the-browser-1" in'
+            'broken_relations_and_links_info because it links to a broken'
+            'relation type 1 (Idunnoexist).'
+        )
+        self.assertNotIn(
+            '/plone/page-3/a-textblock-link-not-using-the-browser',
+            paths_from,
+            'Testing valid relation in textarea: We expect not to find'
+            '"/plone/page-3/a-textblock-link-not-using-the-browser" in'
+            'broken_relations_and_links_info because it links to a valid'
+            'relation type 1 (content-page-on-page-3)'
         )
 
+        # Test 4 - Relation in textarea (link like -> ./foo)
+        self.assertIn(
+            '/plone/page-4/a-textblock-link-not-using-the-browser-1',
+            paths_from,
+            'Testing broken relation in textarea: We expect finding'
+            '"/plone/page-4/a-textblock-link-not-using-the-browser-1" in'
+            'broken_relations_and_links_info because it links to a broken'
+            'relation type 2 (./Icantbefound).'
+        )
         self.assertNotIn(
-            '/plone/page-0/textblock-with-link-in-textarea-2', paths_from,
-            'Testing valid link in textarea: We expect not to find '
-            '"/plone/page-0/textblock-with-link-in-textarea-2" in broken'
-            'relations_and_links_info because it links a valid link'
-            '(http://localhost:55001/plone).'
+            '/plone/page-4/a-textblock-link-not-using-the-browser',
+            paths_from,
+            'Testing valid relation in textarea: We expect not to find'
+            '"/plone/page-4/a-textblock-link-not-using-the-browser" in'
+            'broken_relations_and_links_info because it links to a valid'
+            'relation type 2 (./content-page-on-page-4).'
+        )
+
+        # Test 5 - Relation in textarea (link like -> /foo)
+        self.assertIn(
+            '/plone/page-5/a-textblock-link-not-using-the-browser-1',
+            paths_from,
+            'Testing broken relation in textarea: We expect finding'
+            '"/plone/page-5/a-textblock-link-not-using-the-browser-1" in'
+            'broken_relations_and_links_info because it links to a broken'
+            'relation type 3 (/Iwasnevercreated).'
+        )
+        self.assertNotIn(
+            '/plone/page-5/a-textblock-link-not-using-the-browser',
+            paths_from,
+            'Testing valid relation in textarea: We expect not to find'
+            '"/plone/page-5/a-textblock-link-not-using-the-browser" in'
+            'broken_relations_and_links_info because it links to a valid'
+            'relation type 3 (./content-page-on-page-5).'
+        )
+
+        # Test 6 - Relation in textarea (link like -> /uid)
+        self.assertIn(
+            '/plone/page-6/a-textblock-link-not-using-the-browser-1',
+            paths_from,
+            'Testing broken uid in textarea: We expect finding'
+            '"/plone/page-6/a-textblock-link-not-using-the-browser-1" in'
+            'broken_relations_and_links_info because it links to a broken'
+            'uid (resolveuid/broken_uid).'
+        )
+        self.assertNotIn(
+            '/plone/page-6/a-textblock-link-not-using-the-browser',
+            paths_from,
+            'Testing valid uid in textarea: We expect not to find'
+            '"/plone/page-6/a-textblock-link-not-using-the-browser" in'
+            'broken_relations_and_links_info because it links to a valid'
+            'uid (resolveuid/valid_uid).'
+        )
+
+        # Test 7 - External link in textarea (link like -> http://...)
+        self.assertIn(
+            '/plone/page-7/a-textblock-link-not-using-the-browser-1',
+            paths_from,
+            'Testing broken link in textarea: We expect finding'
+            '"/plone/page-7/a-textblock-link-not-using-the-browser-1" in'
+            'broken_relations_and_links_info because it links to a broken'
+            'url (http://localhost/Sadnottoexist).'
+        )
+        self.assertNotIn(
+            '/plone/page-7/a-textblock-link-not-using-the-browser',
+            paths_from,
+            'Testing valid link in textarea: We expect not to find'
+            '"/plone/page-7/a-textblock-link-not-using-the-browser" in'
+            'broken_relations_and_links_info because it links to a valid'
+            'url (http://localhost/plone).'
         )
 
     def test_if_excel_generator_adds_content_correctly(self):
@@ -234,37 +308,74 @@ class TestLinkChecker(FunctionalTestCase):
             self.grant(portal, 'Manager')
             pages = [create(
                 Builder('sl content page').titled(u'Page {}'.format(index)))
-                for index in range(5)]
+                for index in range(9)]
             browser.login()
 
-            # add external links to pages[0]
+            # Test 1 setup
             browser.visit(pages[0])
             for index, url in enumerate([broken_link, working_link]):
                 self.add_sl_TextBlock_having_external_link(pages[0], url,
                                                            browser, index)
-            # add rel-page-1 to pages[0]
+            # Test 2 setup
             self.add_sl_TextBlock_having_relation(browser, pages[0], pages[1])
-            # add rel-page-2 to pages[0]
             text_block_where_relation_will_be_destroyed = 'Broken relation'
             self.add_sl_TextBlock_having_relation(
                 browser, pages[0], pages[2],
                 text_block_where_relation_will_be_destroyed.decode('utf-8'))
-            # delete page 2 (rel-page-2 should therefore break)
             browser.visit(pages[2])
             [browser.find('Delete').click() for i in range(2)]
-            # add links to textarea of text block
-            for url in [self.portal.absolute_url(),
-                        self.portal.absolute_url() + '/gibtsnicht']:
-                self.add_sl_TextBlock_having_link_in_textarea(browser,
-                                                              pages[0], url)
-
+            # Test 3 setup
             create(Builder('sl content page')
                    .within(pages[3])
                    .titled(u'Content page on page 3'))
-            self.add_link_into_textarea_without_using_the_browser(pages[3],
-                                                                  'content-page-on-page-3')
-            self.add_link_into_textarea_without_using_the_browser(pages[3],
-                                                                  'Idunnoexist')
+            self.add_link_into_textarea_without_using_the_browser(
+                pages[3],
+                'content-page-on-page-3')
+            self.add_link_into_textarea_without_using_the_browser(
+                pages[3],
+                'Idunnoexist')
+            # Test 4 setup
+            create(Builder('sl content page')
+                   .within(pages[4])
+                   .titled(u'Content page on page 4'))
+            self.add_link_into_textarea_without_using_the_browser(
+                pages[4],
+                './content-page-on-page-4')
+            self.add_link_into_textarea_without_using_the_browser(
+                pages[4],
+                './Icantbefound')
+            # Test 5 setup
+            create(Builder('sl content page')
+                   .within(pages[5])
+                   .titled(u'Content page on page 5'))
+            self.add_link_into_textarea_without_using_the_browser(
+                pages[5],
+                '/page-5')
+            self.add_link_into_textarea_without_using_the_browser(
+                pages[5],
+                '/Iwasnevercreated')
+            # Test 6 setup
+            create(Builder('sl content page')
+                   .within(pages[6])
+                   .titled(u'Content page on page 6'))
+            valid_uid = 'resolveuid/' + pages[8].UID()
+            broken_uid = 'resolveuid/99999999999999999999999999999999'
+            self.add_link_into_textarea_without_using_the_browser(
+                pages[6],
+                valid_uid)
+            self.add_link_into_textarea_without_using_the_browser(
+                pages[6],
+                broken_uid)
+            # Test 7 setup
+            create(Builder('sl content page')
+                   .within(pages[7])
+                   .titled(u'Content page on page 7'))
+            self.add_link_into_textarea_without_using_the_browser(
+                pages[7],
+                self.portal.absolute_url())
+            self.add_link_into_textarea_without_using_the_browser(
+                pages[7],
+                self.portal.absolute_url() + '/Sadnottoexist')
 
     def add_link_into_textarea_without_using_the_browser(self, page, url):
         create(Builder('sl textblock')
