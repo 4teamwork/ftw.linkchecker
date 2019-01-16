@@ -75,8 +75,7 @@ def extract_links_in_string(inputString):
     regex = r"(href=['\"]?([^'\" >]+))|(src=['\"]?([^'\" >]+))"
     raw_results = re.findall(regex, inputString)
     # we want to exclude links starting with @@
-    return [url[1] for url in raw_results if
-            url[1][0] != '@' and url[1][1] != '@']
+    return [url[1] for url in raw_results if not url[1].startswith('@@')]
 
 
 def extract_relation_uids_in_string(input_string):
