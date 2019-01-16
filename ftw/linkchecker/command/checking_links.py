@@ -7,6 +7,8 @@ from ftw.linkchecker.cell_format import BOLD
 from ftw.linkchecker.cell_format import CENTER
 from ftw.linkchecker.cell_format import DEFAULT_FONTNAME
 from ftw.linkchecker.cell_format import DEFAULT_FONTSIZE
+from os.path import abspath
+from os.path import dirname
 from plone import api
 from plone.app.textfield.interfaces import IRichText
 from plone.dexterity.interfaces import IDexterityFTI
@@ -18,6 +20,7 @@ from zope.component.hooks import setSite
 from zope.schema import getFieldsInOrder
 from zope.schema.interfaces import IURI
 import AccessControl
+import json
 import os
 import re
 import time
@@ -197,6 +200,56 @@ def add_link_info_to_links(content, link_and_relation_information, obj):
     return link_and_relation_information
 
 
+def extract_relation_uids_in_string(input_string):
+    regex = "resolveuid/\w{32}"
+    uids_long_form = re.findall(regex, input_string)
+    uids = []
+    for uid in uids_long_form:
+        uids.append(uid.split('/')[1])
+    return uids
+
+
+def get_broken_relation_information_by_uids(relation_uids, obj):
+    information_of_broken_relations = []
+    for relation_uid in relation_uids:
+        if not api.content.get(UID=relation_uid):
+            information_of_broken_relations.append([
+                'internal',
+                obj.absolute_url_path(),
+                'Unknown location',
+                'Not specified',
+                'Not specified',
+                'Not specified',
+                'Not specified',
+                'Not specified',
+            ])
+    return information_of_broken_relations
+
+
+def add_link_info_to_links(content, link_and_relation_information, obj):
+    if not isinstance(content, basestring):
+        return
+    # find links in page
+    links = extract_links_in_string(content)
+    # find and add broken relations to link_and_relation_information
+    relation_uids = extract_relation_uids_in_string(content)
+    broken_relations = get_broken_relation_information_by_uids(relation_uids,
+                                                               obj)
+    link_and_relation_information.extend(broken_relations)
+
+    if not links:
+        # only continue if there are any links
+        return
+
+    for link in links:
+        link_and_relation_information.append([
+            'external',
+            obj.absolute_url_path(),
+            link,
+        ])
+    return link_and_relation_information
+
+
 def find_links_on_brain_fields(brain):
     obj = brain.getObject()
     link_and_relation_information = []
@@ -323,15 +376,20 @@ def send_mail_with_excel_report_attached(email_address, path_to_report,
 
 def main(app, *args):
     plone_site_objs = get_plone_sites_information(app)
+
+    path_site_administrator_emails = os.path.join(
+        dirname(dirname(abspath(__file__))), 'site_administrator_emails.json')
+    with open(path_site_administrator_emails) as f_:
+        site_administrator_emails = json.load(f_)
+
     for plone_site_obj in plone_site_objs:
-        email_address = 'hugo.boss@4teamwork.ch'
+        plone_site_id = plone_site_obj.getId()
+        email_address = site_administrator_emails[plone_site_id]
 
         setup_plone(app, plone_site_obj)
-
         broken_relations_and_links_info = get_broken_relations_and_links()
         broken_relations_and_links = broken_relations_and_links_info[1]
         total_time_fetching_external = broken_relations_and_links_info[0]
-
         create_and_send_mailreport_to_plone_site_responible_person(
             email_address, broken_relations_and_links, plone_site_obj,
             total_time_fetching_external)
