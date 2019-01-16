@@ -36,8 +36,7 @@ def get_uri_response(url_item):
     attachment = extract_header_information(response)
 
     if attachment['status code'] == 200 \
-            or 'resolveuid' in url_item[2] \
-            or 'plone_control_panel' in url_item[2]:
+            or 'resolveuid' in url_item[2]:
         return []
     else:
         return [
