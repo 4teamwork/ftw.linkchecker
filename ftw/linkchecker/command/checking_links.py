@@ -24,20 +24,14 @@ import time
 
 
 def get_plone_sites_information(app):
-    plone_sites = [obj for obj in app.objectValues(
+    plone_site_objs = [obj for obj in app.objectValues(
     ) if IPloneSiteRoot.providedBy(obj)]
-    # create information dictionary for each plone site
-    plone_sites_information = [{
-        'id': plone_site.getId(),
-        'path': '/'.join(plone_site.getPhysicalPath()),
-        'title': plone_site.Title()
-    } for plone_site in plone_sites]
 
-    return plone_sites_information
+    return plone_site_objs
 
 
-def setup_plone(app, site_info):
-    plone_site = app.get(site_info['id'])
+def setup_plone(app, plone_site_obj):
+    plone_site = app.get(plone_site_obj.getId())
     user = AccessControl.SecurityManagement.SpecialUsers.system
     user = user.__of__(plone_site.acl_users)
     newSecurityManager(plone_site, user)
@@ -153,6 +147,56 @@ def append_information_for_links_uids_paths(link_and_relation_information, obj,
     return link_and_relation_information
 
 
+def extract_relation_uids_in_string(input_string):
+    regex = "resolveuid/\w{32}"
+    uids_long_form = re.findall(regex, input_string)
+    uids = []
+    for uid in uids_long_form:
+        uids.append(uid.split('/')[1])
+    return uids
+
+
+def get_broken_relation_information_by_uids(relation_uids, obj):
+    information_of_broken_relations = []
+    for relation_uid in relation_uids:
+        if not api.content.get(UID=relation_uid):
+            information_of_broken_relations.append([
+                'internal',
+                obj.absolute_url_path(),
+                'Unknown location',
+                'Not specified',
+                'Not specified',
+                'Not specified',
+                'Not specified',
+                'Not specified',
+            ])
+    return information_of_broken_relations
+
+
+def add_link_info_to_links(content, link_and_relation_information, obj):
+    if not isinstance(content, basestring):
+        return
+    # find links in page
+    links = extract_links_in_string(content)
+    # find and add broken relations to link_and_relation_information
+    relation_uids = extract_relation_uids_in_string(content)
+    broken_relations = get_broken_relation_information_by_uids(relation_uids,
+                                                               obj)
+    link_and_relation_information.extend(broken_relations)
+
+    if not links:
+        # only continue if there are any links
+        return
+
+    for link in links:
+        link_and_relation_information.append([
+            'external',
+            obj.absolute_url_path(),
+            link,
+        ])
+    return link_and_relation_information
+
+
 def find_links_on_brain_fields(brain):
     obj = brain.getObject()
     link_and_relation_information = []
@@ -224,12 +268,12 @@ def iter_schemata_for_protal_type(portal_type):
 
 
 def create_and_send_mailreport_to_plone_site_responible_person(
-        email_address, broken_relations_and_links, site_info,
+        email_address, broken_relations_and_links, plone_site_obj,
         total_time_fetching_external):
     path_to_report = create_excel_report_and_return_filepath(
         broken_relations_and_links)
     send_mail_with_excel_report_attached(email_address, path_to_report,
-                                         site_info,
+                                         plone_site_obj,
                                          total_time_fetching_external)
 
 
@@ -260,7 +304,7 @@ def create_excel_report_and_return_filepath(broken_relations_and_links):
 
 
 def send_mail_with_excel_report_attached(email_address, path_to_report,
-                                         site_info,
+                                         plone_site_obj,
                                          total_time_fetching_external):
     email_subject = 'Linkchecker Report'
     email_message = '''
@@ -270,23 +314,24 @@ def send_mail_with_excel_report_attached(email_address, path_to_report,
     Friendly regards,\n
     your 4teamwork linkcheck reporter\n\n\n
     '''.format(total_time_fetching_external)
-    portal = api.content.get(site_info['path'])
+    plone_site_path = '/'.join(plone_site_obj.getPhysicalPath())
+    portal = api.content.get(plone_site_path)
     report_mailer_instance = report_mailer.MailSender(portal)
     report_mailer_instance.send_feedback(
         email_subject, email_message, email_address, path_to_report)
 
 
 def main(app, *args):
-    plone_sites_information = get_plone_sites_information(app)
-    for site_info in plone_sites_information:
+    plone_site_objs = get_plone_sites_information(app)
+    for plone_site_obj in plone_site_objs:
         email_address = 'hugo.boss@4teamwork.ch'
 
-        setup_plone(app, site_info)
+        setup_plone(app, plone_site_obj)
 
         broken_relations_and_links_info = get_broken_relations_and_links()
         broken_relations_and_links = broken_relations_and_links_info[1]
         total_time_fetching_external = broken_relations_and_links_info[0]
 
         create_and_send_mailreport_to_plone_site_responible_person(
-            email_address, broken_relations_and_links, site_info,
+            email_address, broken_relations_and_links, plone_site_obj,
             total_time_fetching_external)
