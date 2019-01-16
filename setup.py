@@ -9,6 +9,10 @@ tests_require = [
     'ftw.testing',
     'plone.app.testing',
     'plone.testing',
+    'pandas==0.22.0',
+    'xlrd >= 0.9.0',
+    'requests',
+    'xlsxwriter',
 ]
 
 extras_require = {
@@ -53,7 +57,6 @@ setup(
         'plone.api',
         'plone.app.relationfield',
         'plone.recipe.zope2instance',
-        'plone.api'
     ],
 
     tests_require=tests_require,
@@ -63,7 +66,6 @@ setup(
       # -*- Entry points: -*-
       [z3c.autoinclude.plugin]
       target = plone
-
       [zopectl.command]
       check_links = ftw.linkchecker.command.checking_links:main
       """,
