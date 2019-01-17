@@ -1,5 +1,6 @@
 from AccessControl.SecurityManagement import newSecurityManager
 from Products.CMFPlone.interfaces import IPloneSiteRoot
+from Testing.makerequest import makerequest
 from ftw.linkchecker import linkchecker
 from ftw.linkchecker import report_generating
 from ftw.linkchecker import report_mailer
@@ -18,6 +19,7 @@ from z3c.relationfield.interfaces import IRelation
 from zope.component import getUtility
 from zope.component import queryUtility
 from zope.component.hooks import setSite
+from zope.globalrequest import setRequest
 from zope.schema import getFieldsInOrder
 from zope.schema.interfaces import IURI
 import AccessControl
@@ -35,6 +37,8 @@ def get_plone_sites_information(app):
 
 
 def setup_plone(app, plone_site_obj):
+    app = makerequest(app)
+    setRequest(app.REQUEST)
     plone_site = app.get(plone_site_obj.getId())
     user = AccessControl.SecurityManagement.SpecialUsers.system
     user = user.__of__(plone_site.acl_users)
@@ -48,7 +52,6 @@ def get_broken_relations_and_links():
     site_links_and_relations = []
     for brain in brains:
         site_links_and_relations.extend(find_links_on_brain_fields(brain))
-
     external_links = [[x[0], x[1], x[2]] for x in site_links_and_relations
                       if x[0] == 'external']
     broken_relations = [[x[0], x[1], x[2], x[3], x[4], x[5], x[6], x[7], ] for
@@ -138,7 +141,7 @@ def get_broken_relation_information(uids_or_origin_path, obj,
 
 def extract_links_and_relations(content, obj):
     if not isinstance(content, basestring):
-        return
+        return [[], [], []]
     # find links in page
     links_and_paths = extract_links_in_string(content, obj)
     # find and add broken relations to link_and_relation_information
