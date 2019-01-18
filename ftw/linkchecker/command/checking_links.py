@@ -266,7 +266,7 @@ def find_links_on_brain_fields(brain):
                 if fieldvalue.isBroken():
                     append_information_for_links_uids_paths(
                         link_and_relation_information, obj,
-                        broken_relation_paths=[fieldvalue.from_path])
+                        broken_relation_paths=[obj.absolute_url])
 
             elif IURI.providedBy(field):
                 append_information_for_links_uids_paths(

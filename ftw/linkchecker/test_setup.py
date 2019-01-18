@@ -2,6 +2,7 @@ from ftw.builder import Builder
 from ftw.builder import create
 from plone.app.textfield import RichTextValue
 from zope.component.hooks import setSite
+from z3c.relationfield import RelationValue
 
 
 def set_up_test_environment(portal):
@@ -18,8 +19,20 @@ def set_up_test_environment(portal):
 
     # Test 1 setup
     for index, url in enumerate([broken_link, working_link]):
-        add_sl_textblock_having_external_link(pages[0], url,
-                                              index)
+        add_sl_textblock_having_external_link(pages[0], url, index)
+
+    # Test 2 setup
+    create(Builder('sl textblock')
+           .within(pages[0])
+           .titled('default title')
+           .having(internal_link=RelationValue(pages[1])))
+    # create broken relation value
+    broken_rel = RelationValue(pages[2])
+    broken_rel.to_id = None
+    create(Builder('sl textblock')
+           .within(pages[0])
+           .titled('broken relation')
+           .having(internal_link=broken_rel))
 
     # Test 3 setup
     create(Builder('sl content page')
@@ -31,6 +44,7 @@ def set_up_test_environment(portal):
     add_link_into_textarea_without_using_the_browser(
         pages[3],
         'Idunnoexist')
+
     # Test 4 setup
     create(Builder('sl content page')
            .within(pages[4])
@@ -41,6 +55,7 @@ def set_up_test_environment(portal):
     add_link_into_textarea_without_using_the_browser(
         pages[4],
         './Icantbefound')
+
     # Test 5 setup
     create(Builder('sl content page')
            .within(pages[5])
@@ -51,6 +66,7 @@ def set_up_test_environment(portal):
     add_link_into_textarea_without_using_the_browser(
         pages[5],
         '/Iwasnevercreated')
+
     # Test 6 setup
     create(Builder('sl content page')
            .within(pages[6])
@@ -63,6 +79,7 @@ def set_up_test_environment(portal):
     add_link_into_textarea_without_using_the_browser(
         pages[6],
         broken_uid)
+
     # Test 7 setup
     create(Builder('sl content page')
            .within(pages[7])
