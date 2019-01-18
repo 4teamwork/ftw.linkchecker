@@ -1,8 +1,8 @@
 from ftw.builder import Builder
 from ftw.builder import create
 from plone.app.textfield import RichTextValue
-from zope.component.hooks import setSite
 from z3c.relationfield import RelationValue
+from zope.component.hooks import setSite
 
 
 def set_up_test_environment(portal):

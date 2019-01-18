@@ -21,34 +21,29 @@ CURRENT_PATH = os.path.dirname(os.path.abspath(__file__))
 
 class TestFindingLinksAndRelations(MultiPageTestCase):
 
-    def test_finds_broken_relations(self):
-        """Checks if broken relations in page are found.
-        """
-
-        site_administrator_emails = {
-            "plone": "hugo.boss@4teamwork.ch",
-            "plone2": "berta.huber@gmail.com"
-        }
-        app = self.portal.aq_parent
-
-        plone_site_objs = checking_links.get_plone_sites_information(app)
-
+    def test_different_emails_for_different_plone_sites(self):
         self.assertIn(
             self.portal,
-            plone_site_objs,
-            'It is expected that the first test plone site is in the list of'
+            self.plone_site_objs,
+            'It is expected that the first plone site is in the list of'
             'plone sites found.')
 
         self.assertIn(
             self.portals[1],
-            plone_site_objs,
-            'It is expected that the second test plone site is in the list of'
+            self.plone_site_objs,
+            'It is expected that the second plone site is in the list of'
             'plone sites found.')
 
-        plone_site_id_0 = plone_site_objs[0].getId()
+    def test_email_addresses_correspond_to_correct_plone_site(self):
+        site_administrator_emails = {
+            "plone": "hugo.boss@4teamwork.ch",
+            "plone2": "berta.huber@gmail.com"
+        }
+
+        plone_site_id_0 = self.plone_site_objs[0].getId()
         email_address_0 = site_administrator_emails[plone_site_id_0]
 
-        plone_site_id_1 = plone_site_objs[1].getId()
+        plone_site_id_1 = self.plone_site_objs[1].getId()
         email_address_1 = site_administrator_emails[plone_site_id_1]
 
         self.assertEqual(
@@ -63,47 +58,54 @@ class TestFindingLinksAndRelations(MultiPageTestCase):
             'It is expected that the email address for page 1 is corresponding'
             'to its test site administrators email (berta.huber@gmail.com).')
 
-        checking_links.setup_plone(app, plone_site_objs[0])
+    def helper_function_getting_getting_link_information(self):
+        checking_links.setup_plone(self.app, self.plone_site_objs[0])
         broken_relations_and_links_info = checking_links.get_broken_relations_and_links()
-        paths_from = [list_element[1] for list_element in
-                      broken_relations_and_links_info[1]]
+        self.paths_from = [list_element[1] for list_element in
+                           broken_relations_and_links_info[1]]
 
+    def test_external_link(self):
         # Test 1 - External link in link field
+        self.helper_function_getting_getting_link_information()
         self.assertIn(
-            '/plone/page-0/0', paths_from,
+            '/plone/page-0/0', self.paths_from,
             'Testing an invalid external link in IURI: We expect finding '
             '"/plone/page-0/0" in broken_relations_and_links_info because it '
             'is linking to an invalid link'
             '(http://localhost/plone/gibtsnicht).'
         )
         self.assertNotIn(
-            '/plone/page-0/1', paths_from,
+            '/plone/page-0/1', self.paths_from,
             'Testing valid external link in IURI: We expect not to find '
             '"/plone/page-0/1" in broken_relations_and_links_info'
             'because it links to a valid site'
             '(http://localhost/plone).'
         )
 
+    def test_relation_values(self):
         # Test 2 - Relation in relation field
+        self.helper_function_getting_getting_link_information()
         self.assertIn(
-            '/plone/page-0/broken-relation', paths_from,
+            '/plone/page-0/broken-relation', self.paths_from,
             'Testing an invalid relation in IRealtion: We expect finding '
             '"/plone/page-0/broken-relation" in broken_relations_and_links_info'
             'because it links a deleted plone site'
             '(http://localhost/plone/page-2).'
         )
         self.assertNotIn(
-            '/plone/page-0/default-title', paths_from,
+            '/plone/page-0/default-title', self.paths_from,
             'Testing valid relation in IRelation: We expect not to find '
             '"/plone/page-0/default-title" in broken_relations_and_links_info'
             'because it links to a valid site'
             '(http://localhost/plone/page-1).'
         )
 
+    def test_relations_in_textarea_type1(self):
         # Test 3 - Relation in textarea (link like -> foo)
+        self.helper_function_getting_getting_link_information()
         self.assertIn(
             '/plone/page-3/a-textblock-link-not-using-the-browser-1',
-            paths_from,
+            self.paths_from,
             'Testing broken relation in textarea: We expect finding'
             '"/plone/page-3/a-textblock-link-not-using-the-browser-1" in'
             'broken_relations_and_links_info because it links to a broken'
@@ -111,17 +113,19 @@ class TestFindingLinksAndRelations(MultiPageTestCase):
         )
         self.assertNotIn(
             '/plone/page-3/a-textblock-link-not-using-the-browser',
-            paths_from,
+            self.paths_from,
             'Testing valid relation in textarea: We expect not to find'
             '"/plone/page-3/a-textblock-link-not-using-the-browser" in'
             'broken_relations_and_links_info because it links to a valid'
             'relation type 1 (content-page-on-page-3)'
         )
 
+    def test_relations_in_textarea_type2(self):
         # Test 4 - Relation in textarea (link like -> ./foo)
+        self.helper_function_getting_getting_link_information()
         self.assertIn(
             '/plone/page-4/a-textblock-link-not-using-the-browser-1',
-            paths_from,
+            self.paths_from,
             'Testing broken relation in textarea: We expect finding'
             '"/plone/page-4/a-textblock-link-not-using-the-browser-1" in'
             'broken_relations_and_links_info because it links to a broken'
@@ -129,17 +133,19 @@ class TestFindingLinksAndRelations(MultiPageTestCase):
         )
         self.assertNotIn(
             '/plone/page-4/a-textblock-link-not-using-the-browser',
-            paths_from,
+            self.paths_from,
             'Testing valid relation in textarea: We expect not to find'
             '"/plone/page-4/a-textblock-link-not-using-the-browser" in'
             'broken_relations_and_links_info because it links to a valid'
             'relation type 2 (./content-page-on-page-4).'
         )
 
+    def test_relations_in_textarea_type3(self):
         # Test 5 - Relation in textarea (link like -> /foo)
+        self.helper_function_getting_getting_link_information()
         self.assertIn(
             '/plone/page-5/a-textblock-link-not-using-the-browser-1',
-            paths_from,
+            self.paths_from,
             'Testing broken relation in textarea: We expect finding'
             '"/plone/page-5/a-textblock-link-not-using-the-browser-1" in'
             'broken_relations_and_links_info because it links to a broken'
@@ -147,17 +153,19 @@ class TestFindingLinksAndRelations(MultiPageTestCase):
         )
         self.assertNotIn(
             '/plone/page-5/a-textblock-link-not-using-the-browser',
-            paths_from,
+            self.paths_from,
             'Testing valid relation in textarea: We expect not to find'
             '"/plone/page-5/a-textblock-link-not-using-the-browser" in'
             'broken_relations_and_links_info because it links to a valid'
             'relation type 3 (./content-page-on-page-5).'
         )
 
+    def test_realations_in_textarea_type4(self):
         # Test 6 - Relation in textarea (link like -> /uid)
+        self.helper_function_getting_getting_link_information()
         self.assertIn(
             '/plone/page-6/a-textblock-link-not-using-the-browser-1',
-            paths_from,
+            self.paths_from,
             'Testing broken uid in textarea: We expect finding'
             '"/plone/page-6/a-textblock-link-not-using-the-browser-1" in'
             'broken_relations_and_links_info because it links to a broken'
@@ -165,17 +173,19 @@ class TestFindingLinksAndRelations(MultiPageTestCase):
         )
         self.assertNotIn(
             '/plone/page-6/a-textblock-link-not-using-the-browser',
-            paths_from,
+            self.paths_from,
             'Testing valid uid in textarea: We expect not to find'
             '"/plone/page-6/a-textblock-link-not-using-the-browser" in'
             'broken_relations_and_links_info because it links to a valid'
             'uid (resolveuid/valid_uid).'
         )
 
+    def test_external_link_in_textarea(self):
         # Test 7 - External link in textarea (link like -> http://...)
+        self.helper_function_getting_getting_link_information()
         self.assertIn(
             '/plone/page-7/a-textblock-link-not-using-the-browser-1',
-            paths_from,
+            self.paths_from,
             'Testing broken link in textarea: We expect finding'
             '"/plone/page-7/a-textblock-link-not-using-the-browser-1" in'
             'broken_relations_and_links_info because it links to a broken'
@@ -183,7 +193,7 @@ class TestFindingLinksAndRelations(MultiPageTestCase):
         )
         self.assertNotIn(
             '/plone/page-7/a-textblock-link-not-using-the-browser',
-            paths_from,
+            self.paths_from,
             'Testing valid link in textarea: We expect not to find'
             '"/plone/page-7/a-textblock-link-not-using-the-browser" in'
             'broken_relations_and_links_info because it links to a valid'

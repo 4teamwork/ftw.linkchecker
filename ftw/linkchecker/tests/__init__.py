@@ -1,4 +1,5 @@
 from Acquisition import aq_parent
+from ftw.linkchecker.command import checking_links
 from ftw.linkchecker.test_setup import set_up_test_environment
 from ftw.linkchecker.testing import ADDITIONAL_PAGES_TO_SETUP
 from ftw.linkchecker.testing import LINKCHECKER_FUNCTIONAL
@@ -44,6 +45,10 @@ class MultiPageTestCase(TestCase):
 
         for portal in self.portals:
             set_up_test_environment(portal)
+
+        self.app = self.portal.aq_parent
+        self.plone_site_objs = checking_links.get_plone_sites_information(
+            self.app)
 
     def grant(self, portal=None, *roles):
         if isinstance(portal, str):
