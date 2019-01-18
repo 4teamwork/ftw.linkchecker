@@ -1,7 +1,4 @@
 from AccessControl.SecurityManagement import newSecurityManager
-from Acquisition import aq_parent
-from ftw.builder import Builder
-from ftw.builder import create
 from ftw.linkchecker import report_generating
 from ftw.linkchecker import report_mailer
 from ftw.linkchecker.cell_format import BOLD
@@ -9,12 +6,9 @@ from ftw.linkchecker.cell_format import CENTER
 from ftw.linkchecker.cell_format import DEFAULT_FONTNAME
 from ftw.linkchecker.cell_format import DEFAULT_FONTSIZE
 from ftw.linkchecker.command import checking_links
-from ftw.linkchecker.testing import ADDITIONAL_PAGES_TO_SETUP
 from ftw.linkchecker.tests import FunctionalTestCase
-from ftw.testbrowser import browsing
-from ftw.testbrowser.pages import factoriesmenu
+from ftw.linkchecker.tests import MultiPageTestCase
 from ftw.testing.mailing import Mailing
-from plone.app.textfield import RichTextValue
 from zope.component.hooks import setSite
 import AccessControl
 import email
@@ -25,18 +19,15 @@ import transaction
 CURRENT_PATH = os.path.dirname(os.path.abspath(__file__))
 
 
-class TestLinkChecker(FunctionalTestCase):
+class TestFindingLinksAndRelations(MultiPageTestCase):
 
-    def setUp(self):
-        super(TestLinkChecker, self).setUp()
-        self.portal2 = aq_parent(self.portal).get(
-            ADDITIONAL_PAGES_TO_SETUP[0]['page_id'])
 
-    @browsing
-    def test_finds_broken_relations(self, browser):
+
+    def test_finds_broken_relations(self):
         """Checks if broken relations in page are found.
         """
-        self.set_up_test_environment(browser)
+
+        # self.set_up_test_environment(browser)
         site_administrator_emails = {
             "plone": "hugo.boss@4teamwork.ch",
             "plone2": "berta.huber@gmail.com"
@@ -52,7 +43,7 @@ class TestLinkChecker(FunctionalTestCase):
             'plone sites found.')
 
         self.assertIn(
-            self.portal2,
+            self.portals[1],
             plone_site_objs,
             'It is expected that the second test plone site is in the list of'
             'plone sites found.')
@@ -295,128 +286,3 @@ class TestLinkChecker(FunctionalTestCase):
         file_i.add_general_autofilter()
         file_i.cell_width_autofitter()
         file_i.safe_workbook()
-
-    def set_up_test_environment(self, browser):
-        """Set up two plone sites. Both plone sites having the same content.
-        Plone sites have working and broken relations and external links.
-        """
-        for portal in [self.portal, self.portal2]:
-            broken_link = self.portal.absolute_url() + '/gibtsnicht'
-            working_link = self.portal.absolute_url()
-
-            setSite(portal)
-            self.grant(portal, 'Manager')
-            pages = [create(
-                Builder('sl content page').titled(u'Page {}'.format(index)))
-                for index in range(9)]
-            browser.login()
-
-            # Test 1 setup
-            browser.visit(pages[0])
-            for index, url in enumerate([broken_link, working_link]):
-                self.add_sl_TextBlock_having_external_link(pages[0], url,
-                                                           browser, index)
-            # Test 2 setup
-            self.add_sl_TextBlock_having_relation(browser, pages[0], pages[1])
-            text_block_where_relation_will_be_destroyed = 'Broken relation'
-            self.add_sl_TextBlock_having_relation(
-                browser, pages[0], pages[2],
-                text_block_where_relation_will_be_destroyed.decode('utf-8'))
-            browser.visit(pages[2])
-            [browser.find('Delete').click() for i in range(2)]
-            # Test 3 setup
-            create(Builder('sl content page')
-                   .within(pages[3])
-                   .titled(u'Content page on page 3'))
-            self.add_link_into_textarea_without_using_the_browser(
-                pages[3],
-                'content-page-on-page-3')
-            self.add_link_into_textarea_without_using_the_browser(
-                pages[3],
-                'Idunnoexist')
-            # Test 4 setup
-            create(Builder('sl content page')
-                   .within(pages[4])
-                   .titled(u'Content page on page 4'))
-            self.add_link_into_textarea_without_using_the_browser(
-                pages[4],
-                './content-page-on-page-4')
-            self.add_link_into_textarea_without_using_the_browser(
-                pages[4],
-                './Icantbefound')
-            # Test 5 setup
-            create(Builder('sl content page')
-                   .within(pages[5])
-                   .titled(u'Content page on page 5'))
-            self.add_link_into_textarea_without_using_the_browser(
-                pages[5],
-                '/page-5')
-            self.add_link_into_textarea_without_using_the_browser(
-                pages[5],
-                '/Iwasnevercreated')
-            # Test 6 setup
-            create(Builder('sl content page')
-                   .within(pages[6])
-                   .titled(u'Content page on page 6'))
-            valid_uid = 'resolveuid/' + pages[8].UID()
-            broken_uid = 'resolveuid/99999999999999999999999999999999'
-            self.add_link_into_textarea_without_using_the_browser(
-                pages[6],
-                valid_uid)
-            self.add_link_into_textarea_without_using_the_browser(
-                pages[6],
-                broken_uid)
-            # Test 7 setup
-            create(Builder('sl content page')
-                   .within(pages[7])
-                   .titled(u'Content page on page 7'))
-            self.add_link_into_textarea_without_using_the_browser(
-                pages[7],
-                self.portal.absolute_url())
-            self.add_link_into_textarea_without_using_the_browser(
-                pages[7],
-                self.portal.absolute_url() + '/Sadnottoexist')
-
-    def add_link_into_textarea_without_using_the_browser(self, page, url):
-        create(Builder('sl textblock')
-               .within(page)
-               .having(text=RichTextValue('<a href="%s">a link</a>' % url))
-               .titled('A textblock link not using the browser'))
-
-    def add_sl_TextBlock_having_link_in_textarea(self, browser, page, url):
-        sl_textblock_obj = create(Builder('sl textblock')
-                                  .within(page)
-                                  .having(current_context=False)
-                                  .titled('TextBlock with link in textarea'))
-        browser.visit(sl_textblock_obj, view='edit.json')
-        response = browser.json
-        browser.parse(response['content'])
-        browser.fill({
-            'form.widgets.text': '<a href="{}">A banal link</a>'.format(
-                url)})
-        browser.find_button_by_label('Save').click()
-
-    @staticmethod
-    def add_sl_TextBlock_having_relation(browser, page, relation_obj,
-                                         title=u'Default title'):
-        block = create(Builder('sl textblock')
-                       .within(page)
-                       .having(current_context=False)
-                       .titled(title))
-        browser.login()
-        browser.visit(block, view='edit.json')
-        response = browser.json
-        browser.parse(response['content'])
-        browser.fill({
-            'form.widgets.ITeaser.internal_link': relation_obj.absolute_url_path(), })
-        browser.find_button_by_label('Save').click()
-
-    @staticmethod
-    def add_sl_TextBlock_having_external_link(current_page, link,
-                                              browser, index):
-        factoriesmenu.add('TextBlock', browser)
-        browser.fill({
-            'Title': str(index).decode("utf-8"),
-            'External URL': link,
-        }).save()
-        browser.visit(current_page)
