@@ -241,10 +241,6 @@ class TestShippingInformation(FunctionalTestCase):
         # setUp
         Mailing(self.layer['portal']).set_up()
         portal = self.layer['portal']
-        # setup plone site
-        user = AccessControl.SecurityManagement.SpecialUsers.system
-        user = user.__of__(portal.acl_users)
-        newSecurityManager(portal, user)
         setSite(portal)
 
         report_mailer_instance = report_mailer.MailSender(portal)
