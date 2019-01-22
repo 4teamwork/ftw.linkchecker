@@ -240,7 +240,6 @@ class TestShippingInformation(FunctionalTestCase):
 
         # setUp
         Mailing(self.layer['portal']).set_up()
-        transaction.commit()
         portal = self.layer['portal']
         # setup plone site
         user = AccessControl.SecurityManagement.SpecialUsers.system
