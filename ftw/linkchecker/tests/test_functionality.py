@@ -218,10 +218,8 @@ class TestShippingInformation(FunctionalTestCase):
             path_of_excel_workbook_generated)
 
         # import the excel workbooks as pandas dataframes
-        df1 = pd.read_excel(
-            path_of_excel_workbook_generated)
-        df2 = pd.read_excel(
-            path_of_excel_workbook_exemplar)
+        df1 = pd.read_excel(path_of_excel_workbook_generated)
+        df2 = pd.read_excel(path_of_excel_workbook_exemplar)
 
         assert df1.equals(df2), \
             "The examplar excel workbook converges from the one generated."
