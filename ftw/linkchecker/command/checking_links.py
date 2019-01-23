@@ -1,5 +1,6 @@
 from AccessControl.SecurityManagement import newSecurityManager
 from Products.CMFPlone.interfaces import IPloneSiteRoot
+from Testing.makerequest import makerequest
 from ftw.linkchecker import linkchecker
 from ftw.linkchecker import report_generating
 from ftw.linkchecker import report_mailer
@@ -13,10 +14,12 @@ from plone import api
 from plone.app.textfield.interfaces import IRichText
 from plone.dexterity.interfaces import IDexterityFTI
 from plone.dexterity.utils import getAdditionalSchemata
+from urlparse import urlparse
 from z3c.relationfield.interfaces import IRelation
 from zope.component import getUtility
 from zope.component import queryUtility
 from zope.component.hooks import setSite
+from zope.globalrequest import setRequest
 from zope.schema import getFieldsInOrder
 from zope.schema.interfaces import IURI
 import AccessControl
@@ -34,6 +37,8 @@ def get_plone_sites_information(app):
 
 
 def setup_plone(app, plone_site_obj):
+    app = makerequest(app)
+    setRequest(app.REQUEST)
     plone_site = app.get(plone_site_obj.getId())
     user = AccessControl.SecurityManagement.SpecialUsers.system
     user = user.__of__(plone_site.acl_users)
@@ -47,7 +52,6 @@ def get_broken_relations_and_links():
     site_links_and_relations = []
     for brain in brains:
         site_links_and_relations.extend(find_links_on_brain_fields(brain))
-
     external_links = [[x[0], x[1], x[2]] for x in site_links_and_relations
                       if x[0] == 'external']
     broken_relations = [[x[0], x[1], x[2], x[3], x[4], x[5], x[6], x[7], ] for
@@ -67,12 +71,42 @@ def get_broken_relations_and_links():
     return [external_link_data[0], complete_link_and_relation_data]
 
 
-def extract_links_in_string(inputString):
+def extract_links_in_string(inputString, obj):
     # search for href and src
     regex = r"(href=['\"]?([^'\" >]+))|(src=['\"]?([^'\" >]+))"
     raw_results = re.findall(regex, inputString)
-    # we want to exclude links starting with @@
-    return [url[1] for url in raw_results if not url[1].startswith('@@')]
+
+    output_urls = []
+    output_paths = []
+    for url in raw_results:
+        # use actual link in findall tuple.
+        url = url[1]
+        if url.startswith('/'):
+            # handle links on plone site root
+            if url.startswith('//'):
+                url = url[1:]
+            path = '/'.join(api.portal.get().getPhysicalPath()) + url
+            output_paths.append(path)
+        elif url.startswith('resolveuid/'):
+            continue
+        elif not urlparse(url).scheme:
+            # handle relative links and views
+            path = '/'.join(
+                obj.aq_parent.getPhysicalPath()) + '/' + url.lstrip('./')
+            output_paths.append(path)
+        else:
+            # add all the other cases
+            output_urls.append(url)
+
+    broken_paths = []
+    # only append broken paths
+    for path in output_paths:
+        try:
+            api.portal.get().unrestrictedTraverse(path)
+        except KeyError:
+            broken_paths.append(path)
+
+    return [output_urls, broken_paths]
 
 
 def extract_relation_uids_in_string(input_string):
@@ -89,13 +123,9 @@ def get_broken_relation_information(uids_or_origin_path, obj,
     information_of_broken_relations = []
 
     for uid_or_path in uids_or_origin_path:
-        if is_broken:
-            origin_path = uid_or_path
-        if not is_broken:
-            if api.content.get(UID=uid_or_path):
-                continue
-            else:
-                origin_path = obj.absolute_url_path(),
+        if not is_broken and api.content.get(UID=uid_or_path):
+            continue
+        origin_path = obj.absolute_url_path()
         information_of_broken_relations.append([
             'internal',
             origin_path,
@@ -109,20 +139,22 @@ def get_broken_relation_information(uids_or_origin_path, obj,
     return information_of_broken_relations
 
 
-def extract_links_and_relations(content):
+def extract_links_and_relations(content, obj):
     if not isinstance(content, basestring):
-        return
+        return [[], [], []]
     # find links in page
-    links = extract_links_in_string(content)
+    links_and_paths = extract_links_in_string(content, obj)
     # find and add broken relations to link_and_relation_information
     relation_uids = extract_relation_uids_in_string(content)
 
-    return [links, relation_uids]
+    links = links_and_paths[0]
+    paths = links_and_paths[1]
+    return [links, relation_uids, paths]
 
 
 def append_information_for_links_uids_paths(link_and_relation_information, obj,
                                             relation_uids=None,
-                                            relation_paths=None,
+                                            broken_relation_paths=None,
                                             external_links=None):
     # If there are any uids
     if relation_uids:
@@ -133,10 +165,11 @@ def append_information_for_links_uids_paths(link_and_relation_information, obj,
     # It there are any relation paths
     # They need to be tested with obj.isBroken() and come along with
     # is_broken=True. Otherwise it will fail!
-    if relation_paths:
-        broken_relations2 = get_broken_relation_information(relation_paths,
-                                                            obj,
-                                                            is_broken=True)
+    if broken_relation_paths:
+        broken_relations2 = get_broken_relation_information(
+            broken_relation_paths,
+            obj,
+            is_broken=True)
         link_and_relation_information.extend(broken_relations2)
     # If there are external_links
     if external_links:
@@ -150,15 +183,6 @@ def append_information_for_links_uids_paths(link_and_relation_information, obj,
     return link_and_relation_information
 
 
-def extract_relation_uids_in_string(input_string):
-    regex = "resolveuid/\w{32}"
-    uids_long_form = re.findall(regex, input_string)
-    uids = []
-    for uid in uids_long_form:
-        uids.append(uid.split('/')[1])
-    return uids
-
-
 def get_broken_relation_information_by_uids(relation_uids, obj):
     information_of_broken_relations = []
     for relation_uid in relation_uids:
@@ -200,54 +224,21 @@ def add_link_info_to_links(content, link_and_relation_information, obj):
     return link_and_relation_information
 
 
-def extract_relation_uids_in_string(input_string):
-    regex = "resolveuid/\w{32}"
-    uids_long_form = re.findall(regex, input_string)
-    uids = []
-    for uid in uids_long_form:
-        uids.append(uid.split('/')[1])
-    return uids
-
-
-def get_broken_relation_information_by_uids(relation_uids, obj):
-    information_of_broken_relations = []
-    for relation_uid in relation_uids:
-        if not api.content.get(UID=relation_uid):
-            information_of_broken_relations.append([
-                'internal',
-                obj.absolute_url_path(),
-                'Unknown location',
-                'Not specified',
-                'Not specified',
-                'Not specified',
-                'Not specified',
-                'Not specified',
-            ])
-    return information_of_broken_relations
-
-
-def add_link_info_to_links(content, link_and_relation_information, obj):
-    if not isinstance(content, basestring):
-        return
-    # find links in page
-    links = extract_links_in_string(content)
-    # find and add broken relations to link_and_relation_information
-    relation_uids = extract_relation_uids_in_string(content)
-    broken_relations = get_broken_relation_information_by_uids(relation_uids,
-                                                               obj)
-    link_and_relation_information.extend(broken_relations)
-
-    if not links:
-        # only continue if there are any links
-        return
-
-    for link in links:
-        link_and_relation_information.append([
-            'external',
-            obj.absolute_url_path(),
-            link,
-        ])
-    return link_and_relation_information
+def append_to_link_and_relation_information_for_different_link_types(
+        links_and_relations_from_rich_text, link_and_relation_information,
+        obj):
+    links = links_and_relations_from_rich_text[0]
+    uids = links_and_relations_from_rich_text[1]
+    paths = links_and_relations_from_rich_text[2]
+    append_information_for_links_uids_paths(
+        link_and_relation_information, obj,
+        external_links=links)
+    append_information_for_links_uids_paths(
+        link_and_relation_information, obj,
+        relation_uids=uids)
+    append_information_for_links_uids_paths(
+        link_and_relation_information, obj,
+        broken_relation_paths=paths)
 
 
 def find_links_on_brain_fields(brain):
@@ -259,15 +250,10 @@ def find_links_on_brain_fields(brain):
         for field in obj.Schema().fields():
             content = field.getRaw(obj)
             links_and_relations_from_rich_text = extract_links_and_relations(
-                content)
-            links = links_and_relations_from_rich_text[0]
-            uids = links_and_relations_from_rich_text[1]
-            append_information_for_links_uids_paths(
-                link_and_relation_information, obj,
-                external_links=links)
-            append_information_for_links_uids_paths(
-                link_and_relation_information, obj,
-                relation_uids=uids)
+                content, obj)
+            append_to_link_and_relation_information_for_different_link_types(
+                links_and_relations_from_rich_text,
+                link_and_relation_information, obj)
 
     if queryUtility(IDexterityFTI, name=obj.portal_type):
         for name, field, schemata in iter_fields(obj.portal_type):
@@ -280,7 +266,7 @@ def find_links_on_brain_fields(brain):
                 if fieldvalue.isBroken():
                     append_information_for_links_uids_paths(
                         link_and_relation_information, obj,
-                        relation_paths=[fieldvalue.from_path])
+                        broken_relation_paths=[obj.absolute_url])
 
             elif IURI.providedBy(field):
                 append_information_for_links_uids_paths(
@@ -290,15 +276,10 @@ def find_links_on_brain_fields(brain):
             elif IRichText.providedBy(field):
                 orig_text = fieldvalue.raw
                 links_and_relations_from_rich_text = extract_links_and_relations(
-                    orig_text)
-                links = links_and_relations_from_rich_text[0]
-                uids = links_and_relations_from_rich_text[1]
-                append_information_for_links_uids_paths(
-                    link_and_relation_information, obj,
-                    external_links=links)
-                append_information_for_links_uids_paths(
-                    link_and_relation_information, obj,
-                    relation_uids=uids)
+                    orig_text, obj)
+                append_to_link_and_relation_information_for_different_link_types(
+                    links_and_relations_from_rich_text,
+                    link_and_relation_information, obj)
 
     return link_and_relation_information
 
