@@ -1,20 +1,18 @@
-from AccessControl.SecurityManagement import newSecurityManager
 from ftw.linkchecker import report_generating
 from ftw.linkchecker import report_mailer
 from ftw.linkchecker.cell_format import BOLD
 from ftw.linkchecker.cell_format import CENTER
 from ftw.linkchecker.cell_format import DEFAULT_FONTNAME
 from ftw.linkchecker.cell_format import DEFAULT_FONTSIZE
+from ftw.linkchecker.command import broken_link
 from ftw.linkchecker.command import checking_links
 from ftw.linkchecker.tests import FunctionalTestCase
 from ftw.linkchecker.tests import MultiPageTestCase
 from ftw.testing.mailing import Mailing
 from zope.component.hooks import setSite
-import AccessControl
 import email
 import os
 import pandas as pd
-import transaction
 
 CURRENT_PATH = os.path.dirname(os.path.abspath(__file__))
 
@@ -60,8 +58,8 @@ class TestFindingLinksAndRelations(MultiPageTestCase):
 
     def helper_function_getting_getting_link_information(self):
         checking_links.setup_plone(self.app, self.plone_site_objs[0])
-        broken_relations_and_links_info = checking_links.get_broken_relations_and_links()
-        self.paths_from = [list_element[1] for list_element in
+        broken_relations_and_links_info = checking_links.get_total_fetching_time_and_broken_link_objs()
+        self.paths_from = [list_element.link_origin for list_element in
                            broken_relations_and_links_info[1]]
 
     def test_external_link(self):
@@ -263,17 +261,16 @@ class TestShippingInformation(FunctionalTestCase):
 
     @staticmethod
     def generate_test_data_excel_workbook(path_of_excel_workbook_generated):
-        exemplar_report_data = [
-            ['Some', 'example', 'data', 'to', 'fill', 'the', 'excel', 'sheet'],
-            ['Some', 'example', 'data', 'to', 'fill', 'the', 'excel', 'sheet'],
-            ['Some', 'example', 'data', 'to', 'fill', 'the', 'excel', 'sheet'],
-            ['Some', 'example', 'data', 'to', 'fill', 'the', 'excel', 'sheet'],
-            ['Some', 'example', 'data', 'to', 'fill', 'the', 'excel', 'sheet'],
-            ['Some', 'example', 'data', 'to', 'fill', 'the', 'excel', 'sheet'],
-            ['Some', 'example', 'data', 'to', 'fill', 'the', 'excel', 'sheet'],
-            ['Some', 'example', 'data', 'to', 'fill', 'the', 'excel', 'sheet'],
-            ['Some', 'example', 'data', 'to', 'fill', 'the', 'excel', 'sheet'],
-        ]
+        example_data = broken_link.BrokenLink()
+        example_data.is_internal = 'Some'
+        example_data.link_origin = 'example'
+        example_data.link_target = 'data'
+        example_data.status_code = 'to'
+        example_data.content_type = 'fill'
+        example_data.response_time = 'the'
+        example_data.header_location = 'excel'
+        example_data.error_message = 'sheet'
+        exemplar_report_data = [example_data] * 9
 
         file_i = report_generating.ReportCreator(
             path_of_excel_workbook_generated)

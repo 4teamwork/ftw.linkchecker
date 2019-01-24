@@ -55,3 +55,11 @@ class BrokenLink(object):
             self.link_origin = '/'.join(obj_having_uid.getPhysicalPath())
         else:
             self.is_broken = False
+
+    def complete_information_for_broken_relation_with_broken_relation_obj(
+            self,
+            obj_having_broken_relation):
+        self.is_broken = True
+        self.is_internal = True
+        self.link_origin = '/'.join(
+            obj_having_broken_relation.getPhysicalPath())
