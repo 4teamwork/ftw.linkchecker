@@ -8,9 +8,6 @@ from ftw.linkchecker.cell_format import BOLD
 from ftw.linkchecker.cell_format import CENTER
 from ftw.linkchecker.cell_format import DEFAULT_FONTNAME
 from ftw.linkchecker.cell_format import DEFAULT_FONTSIZE
-from ftw.linkchecker.command.broken_link import BrokenLink
-from os.path import abspath
-from os.path import dirname
 from plone import api
 from plone.app.textfield.interfaces import IRichText
 from plone.dexterity.interfaces import IDexterityFTI
@@ -24,6 +21,7 @@ from zope.globalrequest import setRequest
 from zope.schema import getFieldsInOrder
 from zope.schema.interfaces import IURI
 import AccessControl
+import argparse
 import json
 import os
 import re
@@ -265,13 +263,26 @@ def send_mail_with_excel_report_attached(email_address, plone_site_obj,
         email_subject, email_message, email_address, xlsx_file)
 
 
+def get_config_file(*args):
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--config",
+                        help="Path to linkchecker config file.")
+    args, unknown = parser.parse_known_args()
+    path_to_config_file = args.config
+
+    if not os.path.isfile(path_to_config_file):
+        exit()
+
+    with open(path_to_config_file) as f_:
+        site_administrator_emails = json.load(f_)
+
+    return site_administrator_emails
+
+
 def main(app, *args):
     plone_site_objs = get_plone_sites_information(app)
 
-    path_site_administrator_emails = os.path.join(
-        dirname(dirname(abspath(__file__))), 'site_administrator_emails.json')
-    with open(path_site_administrator_emails) as f_:
-        site_administrator_emails = json.load(f_)
+    site_administrator_emails = get_config_file(args)
 
     for plone_site_obj in plone_site_objs:
         plone_site_id = plone_site_obj.getId()
