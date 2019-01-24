@@ -1,4 +1,5 @@
 from ftw.linkchecker.command import broken_link
+from io import BytesIO
 import xlsxwriter
 
 LABELS = broken_link.BrokenLink()
@@ -17,10 +18,11 @@ NUMBER_OF_LABELS = 8
 
 class ReportCreator(object):
 
-    def __init__(self, xlsx_file_path):
-        self.xlsx_file_path = xlsx_file_path
+    def __init__(self):
         self.row = 0
-        self.workbook = xlsxwriter.Workbook(self.xlsx_file_path)
+        self.output_xlsx = BytesIO()
+        self.workbook = xlsxwriter.Workbook(self.output_xlsx,
+                                            {'in_memory': True})
         self.worksheet = self.workbook.add_worksheet()
         self.table = []
 
@@ -65,3 +67,7 @@ class ReportCreator(object):
 
     def safe_workbook(self):
         self.workbook.close()
+
+    def get_workbook(self):
+        self.output_xlsx.seek(0)
+        return self.output_xlsx

@@ -1,12 +1,13 @@
+from Testing.makerequest import makerequest
 from email import encoders
 from email.header import Header
 from email.mime.base import MIMEBase
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.utils import formatdate
-from Testing.makerequest import makerequest
 from zope.component.hooks import setSite
 import plone.api
+import time
 
 
 class MailSender(object):
@@ -19,7 +20,7 @@ class MailSender(object):
             self.PLONE = portal
         setSite(self.PLONE)
 
-    def send_feedback(self, email_subject, email_message, receiver_email_address, report_path):
+    def send_feedback(self, email_subject, email_message, receiver_email_address, xlsx_file):
         """Send an email including an excel workbook attached.
         """
         mh = plone.api.portal.get_tool('MailHost')
@@ -28,7 +29,8 @@ class MailSender(object):
 
         sender = 'Linkcheck Reporter'
         recipient = from_email
-        file_name = report_path.rsplit('/', 1)[1]
+        file_name = 'linkchecker_report_{}.xlsx'.format(
+            time.strftime('%Y_%b_%d_%H%M%S', time.gmtime()))
 
         msg = MIMEMultipart()
         msg['From'] = "%s <%s>" % (from_name, from_email)
@@ -39,7 +41,7 @@ class MailSender(object):
         msg.attach(MIMEText(email_message.encode(
             'windows-1252'), 'plain', 'windows-1252'))
         part = MIMEBase('application', "octet-stream")
-        part.set_payload(open(report_path, "rb").read())
+        part.set_payload(xlsx_file.read())
         encoders.encode_base64(part)
         part.add_header(
             'Content-Disposition',

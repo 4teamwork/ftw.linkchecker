@@ -27,7 +27,6 @@ import AccessControl
 import json
 import os
 import re
-import time
 
 
 def get_plone_sites_information(app):
@@ -223,20 +222,15 @@ def append_to_link_and_relation_information_for_different_link_types(
 def create_and_send_mailreport_to_plone_site_responible_person(
         email_address, link_objs, plone_site_obj,
         total_time_fetching_external):
-    path_to_report = create_excel_report_and_return_filepath(
+    xlsx_file = create_excel_report_and_return_filepath(
         link_objs)
-    send_mail_with_excel_report_attached(email_address, path_to_report,
-                                         plone_site_obj,
-                                         total_time_fetching_external)
+    send_mail_with_excel_report_attached(email_address, plone_site_obj,
+                                         total_time_fetching_external,
+                                         xlsx_file)
 
 
 def create_excel_report_and_return_filepath(link_objs):
-    filename = 'linkchecker_report_{}.xlsx'.format(
-        time.strftime('%Y_%b_%d_%H%M%S', time.gmtime()))
-    current_path = os.path.dirname(os.path.abspath(__file__))
-    path_of_excel_workbook_generated = current_path + '/reports/' + filename
-
-    file_i = report_generating.ReportCreator(path_of_excel_workbook_generated)
+    file_i = report_generating.ReportCreator()
     file_i.append_report_data(report_generating.LABELS,
                               BOLD &
                               CENTER &
@@ -249,12 +243,13 @@ def create_excel_report_and_return_filepath(link_objs):
     file_i.add_general_autofilter()
     file_i.cell_width_autofitter()
     file_i.safe_workbook()
-    return path_of_excel_workbook_generated
+    xlsx_file = file_i.get_workbook()
+    return xlsx_file
 
 
-def send_mail_with_excel_report_attached(email_address, path_to_report,
-                                         plone_site_obj,
-                                         total_time_fetching_external):
+def send_mail_with_excel_report_attached(email_address, plone_site_obj,
+                                         total_time_fetching_external,
+                                         xlsx_file):
     email_subject = 'Linkchecker Report'
     email_message = '''
     Dear Site Administrator, \n\n
@@ -267,7 +262,7 @@ def send_mail_with_excel_report_attached(email_address, path_to_report,
     portal = api.content.get(plone_site_path)
     report_mailer_instance = report_mailer.MailSender(portal)
     report_mailer_instance.send_feedback(
-        email_subject, email_message, email_address, path_to_report)
+        email_subject, email_message, email_address, xlsx_file)
 
 
 def main(app, *args):
