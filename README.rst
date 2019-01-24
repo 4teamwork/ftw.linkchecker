@@ -31,8 +31,8 @@ Installation
         ftw.linkchecker
 
 
-In the file `ftw/linkchecker/site_administrator_emails.json` one can configure
-a site administrator per plone site by plone site id.
+One needs to add a config file (e.g. linkchecker_config.json) holding the sites
+ids and their site administrators email addresses like:
 
 ::
 
@@ -40,6 +40,16 @@ a site administrator per plone site by plone site id.
       "plone-site-id-one": "hugo.boss@4teamwork.com",
       "plone-site-id-one": "sec_site_admin@4teamwork.com"
     }
+
+
+Usage
+=====
+
+The linkchecker can be started with:
+
+::
+
+    bin/instance check_links --config path/to/config/file.json
 
 
 Development
