@@ -279,6 +279,22 @@ def get_config_file(*args):
     return site_administrator_emails
 
 
+def get_config_file(args):
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--config",
+                        help="Path to linkchecker config file.")
+    args, unknown = parser.parse_known_args()
+    path_to_config_file = args.config
+
+    if not os.path.isfile(path_to_config_file):
+        exit()
+
+    with open(path_to_config_file) as f_:
+        site_administrator_emails = json.load(f_)
+
+    return site_administrator_emails
+
+
 def main(app, *args):
     plone_site_objs = get_plone_sites_information(app)
 
