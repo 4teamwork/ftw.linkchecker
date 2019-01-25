@@ -39,11 +39,10 @@ def get_plone_sites_information(app):
 def setup_plone(app, plone_site_obj):
     app = makerequest(app)
     setRequest(app.REQUEST)
-    plone_site = app.get(plone_site_obj.getId())
     user = AccessControl.SecurityManagement.SpecialUsers.system
-    user = user.__of__(plone_site.acl_users)
-    newSecurityManager(plone_site, user)
-    setSite(plone_site)
+    user = user.__of__(plone_site_obj.acl_users)
+    newSecurityManager(plone_site_obj, user)
+    setSite(plone_site_obj)
 
 
 def get_total_fetching_time_and_broken_link_objs():
