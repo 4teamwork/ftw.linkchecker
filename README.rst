@@ -41,6 +41,8 @@ ids and their site administrators email addresses like:
       "plone-site-id-one": "sec_site_admin@4teamwork.com"
     }
 
+Json files do not have a comma at the end of the last entry!
+
 
 Usage
 =====
