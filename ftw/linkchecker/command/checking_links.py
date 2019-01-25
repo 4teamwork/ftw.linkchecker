@@ -29,11 +29,13 @@ import os
 import re
 
 
-def get_plone_sites_information(app):
-    plone_site_objs = [obj for obj in app.objectValues(
-    ) if IPloneSiteRoot.providedBy(obj)]
-
-    return plone_site_objs
+def get_plone_sites(obj):
+    for child in obj.objectValues():
+        if child.meta_type == 'Plone Site':
+            yield child
+        elif child.meta_type == 'Folder':
+            for item in get_plone_sites(child):
+                yield item
 
 
 def setup_plone(app, plone_site_obj):
@@ -266,7 +268,7 @@ def send_mail_with_excel_report_attached(email_address, plone_site_obj,
 
 
 def main(app, *args):
-    plone_site_objs = get_plone_sites_information(app)
+    plone_site_objs = list(get_plone_sites(app))
 
     path_site_administrator_emails = os.path.join(
         dirname(dirname(abspath(__file__))), 'site_administrator_emails.json')
