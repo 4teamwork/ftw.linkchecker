@@ -13,6 +13,7 @@ class BrokenLink(object):
         'header_location',
         'error_message',
     ]
+    counter = 0
 
     def __init__(self):
         self.is_broken = None
@@ -24,6 +25,8 @@ class BrokenLink(object):
         self.response_time = 'Unknown response time'
         self.header_location = 'Unknown header location'
         self.error_message = 'No error occurred'
+        self.counter = BrokenLink.counter
+        BrokenLink.counter += 1
 
     def __iter__(self):
         for attr in self.table_attrs:

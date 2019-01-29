@@ -2,6 +2,7 @@ from AccessControl.SecurityManagement import newSecurityManager
 from Products.CMFPlone.interfaces import IPloneSiteRoot
 from Testing.makerequest import makerequest
 from ftw.linkchecker import linkchecker
+from ftw.linkchecker import logger
 from ftw.linkchecker import report_generating
 from ftw.linkchecker import report_mailer
 from ftw.linkchecker.cell_format import BOLD
