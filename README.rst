@@ -49,7 +49,7 @@ The linkchecker can be started with:
 
 ::
 
-    bin/instance check_links path/to/config/file.json
+    bin/instance check_links --config path/to/config/file.json
 
 
 Development
