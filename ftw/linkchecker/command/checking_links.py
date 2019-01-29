@@ -30,6 +30,36 @@ import os
 import re
 
 
+def count_parent_pointers(path_segments):
+    if not path_segments:
+        return 0
+    if path_segments[0] != '..':
+        return 0
+    for index, segment in enumerate(path_segments):
+        if segment == '..':
+            continue
+        else:
+            break
+    return index + 1
+
+
+def create_path_even_there_are_parent_pointers(obj, url):
+    portal_path_segments = api.portal.get().getPhysicalPath()
+    current_path_segments = obj.aq_parent.getPhysicalPath()
+    destination_path_segments = filter(len, url.split('/'))
+    destination_path = '/'.join(destination_path_segments)
+    portal_path = '/'.join(portal_path_segments)
+
+    number_of_parent_pointers = count_parent_pointers(
+        destination_path_segments)
+    if number_of_parent_pointers >= len(current_path_segments) - len(
+            portal_path_segments):
+        new_path = portal_path + '/' + destination_path.lstrip('../')
+        return new_path
+    else:
+        return urljoin('/'.join(obj.aq_parent.getPhysicalPath()), url)
+
+
 def _get_plone_sites(obj):
     for child in obj.objectValues():
         if child.meta_type == 'Plone Site':
@@ -170,8 +200,8 @@ def extract_links_in_string(input_string, obj):
         elif url.startswith('resolveuid/'):
             continue
         elif not urlparse(url).scheme:
-            output_paths.append(
-                urljoin('/'.join(obj.aq_parent.getPhysicalPath()), url))
+            path = create_path_even_there_are_parent_pointers(obj, url)
+            output_paths.append(path)
         else:
             output_urls.append(url)
 
