@@ -29,10 +29,8 @@ def get_uri_response(external_link_obj):
         error = 'Too many redirects'
     except requests.exceptions.ConnectionError:
         error = 'Connection Error'
-    except requests.exceptions.RequestException as e:
-        error = e
     except Exception as e:
-        error = e
+        error = e.message
 
     time = millis() - start_time
 

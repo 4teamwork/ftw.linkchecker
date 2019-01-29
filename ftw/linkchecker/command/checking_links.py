@@ -8,11 +8,13 @@ from ftw.linkchecker.cell_format import BOLD
 from ftw.linkchecker.cell_format import CENTER
 from ftw.linkchecker.cell_format import DEFAULT_FONTNAME
 from ftw.linkchecker.cell_format import DEFAULT_FONTSIZE
+from ftw.linkchecker.command.broken_link import BrokenLink
 from plone import api
 from plone.app.textfield.interfaces import IRichText
 from plone.dexterity.interfaces import IDexterityFTI
 from plone.dexterity.utils import getAdditionalSchemata
 from urlparse import urlparse
+from urlparse import urljoin
 from z3c.relationfield.interfaces import IRelation
 from zope.component import getUtility
 from zope.component import queryUtility
@@ -27,21 +29,24 @@ import os
 import re
 
 
-def get_plone_sites_information(app):
-    plone_site_objs = [obj for obj in app.objectValues(
-    ) if IPloneSiteRoot.providedBy(obj)]
-
-    return plone_site_objs
+def _get_plone_sites(obj):
+    for child in obj.objectValues():
+        if child.meta_type == 'Plone Site':
+            yield child
+        elif child.meta_type == 'Folder':
+            for item in _get_plone_sites(child):
+                yield item
 
 
 def setup_plone(app, plone_site_obj):
     app = makerequest(app)
     setRequest(app.REQUEST)
-    plone_site = app.get(plone_site_obj.getId())
+    plone_site_obj = app.unrestrictedTraverse(
+        '/'.join(plone_site_obj.getPhysicalPath()))
     user = AccessControl.SecurityManagement.SpecialUsers.system
-    user = user.__of__(plone_site.acl_users)
-    newSecurityManager(plone_site, user)
-    setSite(plone_site)
+    user = user.__of__(plone_site_obj.acl_users)
+    newSecurityManager(plone_site_obj, user)
+    setSite(plone_site_obj)
 
 
 def get_total_fetching_time_and_broken_link_objs():
@@ -93,7 +98,7 @@ def find_links_on_brain_fields(brain):
                 if fieldvalue.isBroken():
                     link = BrokenLink()
                     link.complete_information_for_broken_relation_with_broken_relation_obj(
-                        obj)
+                        obj, field)
                     link_objs.append(link)
 
             elif IURI.providedBy(field):
@@ -156,42 +161,35 @@ def extract_links_in_string(input_string, obj):
     output_paths = []
     for url in raw_results:
         # use actual link in findall tuple.
+
         url = url[1]
-        if url.startswith('/'):
-            # handle links on plone site root
-            if url.startswith('//'):
-                url = url[1:]
-            path = '/'.join(api.portal.get().getPhysicalPath()) + url
-            output_paths.append(path)
+
+        if url.startswith('mailto:'):
+            continue
         elif url.startswith('resolveuid/'):
             continue
         elif not urlparse(url).scheme:
-            # handle relative links and views
-            path = '/'.join(
-                obj.aq_parent.getPhysicalPath()) + '/' + url.lstrip('./')
-            output_paths.append(path)
+            output_paths.append(
+                urljoin('/'.join(obj.aq_parent.getPhysicalPath()), url))
         else:
-            # add all the other cases
             output_urls.append(url)
 
     broken_paths = []
     # only append broken paths
     for path in output_paths:
         try:
-            api.portal.get().unrestrictedTraverse(path)
-        except KeyError:
+            # unrestricted traverse needs utf-8 encoded string
+            # but we want unicode in the end.
+            api.portal.get().unrestrictedTraverse(path.encode('utf-8'))
+        except Exception:
             broken_paths.append(path)
 
     return [output_urls, broken_paths]
 
 
 def extract_relation_uids_in_string(input_string):
-    regex = "resolveuid/\w{32}"
-    uids_long_form = re.findall(regex, input_string)
-    uids = []
-    for uid in uids_long_form:
-        uids.append(uid.split('/')[1])
-    return uids
+    regex = re.compile('^[./]*resolve[Uu]id/([^/]*)/?(.*)$')
+    return re.findall(regex, input_string)
 
 
 def append_to_link_and_relation_information_for_different_link_types(
@@ -263,22 +261,6 @@ def send_mail_with_excel_report_attached(email_address, plone_site_obj,
         email_subject, email_message, email_address, xlsx_file)
 
 
-def get_config_file(*args):
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--config",
-                        help="Path to linkchecker config file.")
-    args, unknown = parser.parse_known_args()
-    path_to_config_file = args.config
-
-    if not os.path.isfile(path_to_config_file):
-        exit()
-
-    with open(path_to_config_file) as f_:
-        site_administrator_emails = json.load(f_)
-
-    return site_administrator_emails
-
-
 def get_config_file(args):
     parser = argparse.ArgumentParser()
     parser.add_argument("--config",
@@ -296,8 +278,7 @@ def get_config_file(args):
 
 
 def main(app, *args):
-    plone_site_objs = get_plone_sites_information(app)
-
+    plone_site_objs = list(_get_plone_sites(app))
     site_administrator_emails = get_config_file(args)
 
     for plone_site_obj in plone_site_objs:

@@ -1,4 +1,5 @@
 from plone import api
+from plone.dexterity.utils import safe_utf8
 
 
 class BrokenLink(object):
@@ -35,9 +36,10 @@ class BrokenLink(object):
     def complete_information_with_internal_path(self, obj_having_path, path):
         # relation not broken if possible to traverse to
         try:
-            api.portal.get().unrestrictedTraverse(path)
+            api.portal.get().unrestrictedTraverse(safe_utf8(path))
             self.is_broken = False
-        except KeyError:
+            self.is_internal = True
+        except Exception:
             self.is_broken = True
             self.is_internal = True
             self.link_origin = '/'.join(obj_having_path.getPhysicalPath())
@@ -53,13 +55,16 @@ class BrokenLink(object):
             self.is_broken = True
             self.is_internal = True
             self.link_origin = '/'.join(obj_having_uid.getPhysicalPath())
+            self.link_target = uid
         else:
             self.is_broken = False
+            self.is_internal = True
 
     def complete_information_for_broken_relation_with_broken_relation_obj(
             self,
-            obj_having_broken_relation):
+            obj_having_broken_relation, field):
         self.is_broken = True
         self.is_internal = True
         self.link_origin = '/'.join(
             obj_having_broken_relation.getPhysicalPath())
+        self.link_target = 'Broken link in field: ' + str(field)

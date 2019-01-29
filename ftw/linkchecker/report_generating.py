@@ -1,3 +1,4 @@
+from Products.CMFPlone.utils import safe_unicode
 from ftw.linkchecker.command import broken_link
 from io import BytesIO
 import xlsxwriter
@@ -39,13 +40,21 @@ class ReportCreator(object):
                 int_ext_link = 'External Link'
 
             self.worksheet.write(self.row, 0, int_ext_link, format)
-            self.worksheet.write(self.row, 1, str(link_obj.link_origin), format)
-            self.worksheet.write(self.row, 2, str(link_obj.link_target), format)
-            self.worksheet.write(self.row, 3, str(link_obj.status_code), format)
-            self.worksheet.write(self.row, 4, str(link_obj.content_type), format)
-            self.worksheet.write(self.row, 5, str(link_obj.response_time), format)
-            self.worksheet.write(self.row, 6, str(link_obj.header_location), format)
-            self.worksheet.write(self.row, 7, str(link_obj.error_message), format)
+            self.worksheet.write(self.row, 1,
+                                 safe_unicode(link_obj.link_origin), format)
+            self.worksheet.write(self.row, 2,
+                                 safe_unicode(link_obj.link_target), format)
+            self.worksheet.write(self.row, 3,
+                                 safe_unicode(link_obj.status_code), format)
+            self.worksheet.write(self.row, 4,
+                                 safe_unicode(link_obj.content_type), format)
+            self.worksheet.write(self.row, 5,
+                                 safe_unicode(link_obj.response_time), format)
+            self.worksheet.write(self.row, 6,
+                                 safe_unicode(link_obj.header_location),
+                                 format)
+            self.worksheet.write(self.row, 7,
+                                 safe_unicode(link_obj.error_message), format)
 
             self.row += 1
         self.table.extend(link_objs)
