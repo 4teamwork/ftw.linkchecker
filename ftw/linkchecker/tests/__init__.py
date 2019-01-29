@@ -47,8 +47,7 @@ class MultiPageTestCase(TestCase):
             set_up_test_environment(portal)
 
         self.app = self.portal.aq_parent
-        self.plone_site_objs = checking_links.get_plone_sites_information(
-            self.app)
+        self.plone_site_objs = list(checking_links._get_plone_sites(self.app))
 
     def grant(self, portal=None, *roles):
         if isinstance(portal, str):
