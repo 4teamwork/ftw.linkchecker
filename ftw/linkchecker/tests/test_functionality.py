@@ -158,42 +158,22 @@ class TestFindingLinksAndRelations(MultiPageTestCase):
             'relation type 3 (./content-page-on-page-5).'
         )
 
-    def test_realations_in_textarea_type4(self):
-        # Test 6 - Relation in textarea (link like -> /uid)
+    def test_external_link_in_textarea(self):
+        # Test 6 - External link in textarea (link like -> http://...)
         self.helper_function_getting_getting_link_information()
         self.assertIn(
             '/plone/page-6/a-textblock-link-not-using-the-browser-1',
             self.paths_from,
-            'Testing broken uid in textarea: We expect finding'
-            '"/plone/page-6/a-textblock-link-not-using-the-browser-1" in'
-            'broken_relations_and_links_info because it links to a broken'
-            'uid (resolveuid/broken_uid).'
-        )
-        self.assertNotIn(
-            '/plone/page-6/a-textblock-link-not-using-the-browser',
-            self.paths_from,
-            'Testing valid uid in textarea: We expect not to find'
-            '"/plone/page-6/a-textblock-link-not-using-the-browser" in'
-            'broken_relations_and_links_info because it links to a valid'
-            'uid (resolveuid/valid_uid).'
-        )
-
-    def test_external_link_in_textarea(self):
-        # Test 7 - External link in textarea (link like -> http://...)
-        self.helper_function_getting_getting_link_information()
-        self.assertIn(
-            '/plone/page-7/a-textblock-link-not-using-the-browser-1',
-            self.paths_from,
             'Testing broken link in textarea: We expect finding'
-            '"/plone/page-7/a-textblock-link-not-using-the-browser-1" in'
+            '"/plone/page-6/a-textblock-link-not-using-the-browser-1" in'
             'broken_relations_and_links_info because it links to a broken'
             'url (http://localhost/Sadnottoexist).'
         )
         self.assertNotIn(
-            '/plone/page-7/a-textblock-link-not-using-the-browser',
+            '/plone/page-6/a-textblock-link-not-using-the-browser',
             self.paths_from,
             'Testing valid link in textarea: We expect not to find'
-            '"/plone/page-7/a-textblock-link-not-using-the-browser" in'
+            '"/plone/page-6/a-textblock-link-not-using-the-browser" in'
             'broken_relations_and_links_info because it links to a valid'
             'url (http://localhost/plone).'
         )

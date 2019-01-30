@@ -57,7 +57,15 @@ def create_path_even_there_are_parent_pointers(obj, url):
         new_path = portal_path + '/' + destination_path.lstrip('../')
         return new_path
     else:
-        return urljoin('/'.join(obj.aq_parent.getPhysicalPath()), url)
+        if url.startswith('/'):
+            output_path = portal_path + url
+        else:
+        # XXX: < plone5, relative paths are appended to the basepath having a
+        # slash at the end. For plone5 support we need to look at this again.
+            output_path = urljoin(
+                '/'.join(list(obj.aq_parent.getPhysicalPath()) + ['']), url)
+
+        return output_path
 
 
 def _get_plone_sites(obj):
