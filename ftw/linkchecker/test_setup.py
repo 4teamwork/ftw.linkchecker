@@ -5,6 +5,16 @@ from z3c.relationfield import RelationValue
 from zope.component.hooks import setSite
 
 
+def add_textarea_to_plone_site(portal):
+    setSite(portal)
+    content_page = create(Builder('sl content page').titled(u'contentpage'))
+    textarea_having_link = create(Builder('sl textblock')
+                                  .within(content_page)
+                                  .having(text=RichTextValue('...'))
+                                  .titled('textarea'))
+    return textarea_having_link
+
+
 def set_up_test_environment(portal):
     """Set up two plone sites. Both plone sites having the same content.
     Plone sites have working and broken relations and external links.
