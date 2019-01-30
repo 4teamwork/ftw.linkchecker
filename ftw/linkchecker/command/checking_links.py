@@ -2,9 +2,9 @@ from AccessControl.SecurityManagement import newSecurityManager
 from Products.CMFPlone.interfaces import IPloneSiteRoot
 from Testing.makerequest import makerequest
 from ftw.linkchecker import linkchecker
-from ftw.linkchecker import logger
 from ftw.linkchecker import report_generating
 from ftw.linkchecker import report_mailer
+from ftw.linkchecker import setup_logger
 from ftw.linkchecker.cell_format import BOLD
 from ftw.linkchecker.cell_format import CENTER
 from ftw.linkchecker.cell_format import DEFAULT_FONTNAME
@@ -14,8 +14,8 @@ from plone import api
 from plone.app.textfield.interfaces import IRichText
 from plone.dexterity.interfaces import IDexterityFTI
 from plone.dexterity.utils import getAdditionalSchemata
-from urlparse import urlparse
 from urlparse import urljoin
+from urlparse import urlparse
 from z3c.relationfield.interfaces import IRelation
 from zope.component import getUtility
 from zope.component import queryUtility
@@ -25,7 +25,7 @@ from zope.schema import getFieldsInOrder
 from zope.schema.interfaces import IURI
 import AccessControl
 import argparse
-import json
+import json 
 import os
 import re
 
@@ -60,8 +60,8 @@ def create_path_even_there_are_parent_pointers(obj, url):
         if url.startswith('/'):
             output_path = portal_path + url
         else:
-        # XXX: < plone5, relative paths are appended to the basepath having a
-        # slash at the end. For plone5 support we need to look at this again.
+            # XXX: < plone5, relative paths are appended to the basepath having a
+            # slash at the end. For plone5 support we need to look at this again.
             output_path = urljoin(
                 '/'.join(list(obj.aq_parent.getPhysicalPath()) + ['']), url)
 
@@ -300,12 +300,15 @@ def send_mail_with_excel_report_attached(email_address, plone_site_obj,
         email_subject, email_message, email_address, xlsx_file)
 
 
-def get_config_file(args):
+def get_configs(args):
     parser = argparse.ArgumentParser()
     parser.add_argument("--config",
                         help="Path to linkchecker config file.")
+    parser.add_argument("--log",
+                        help="Path to linkchecker log file.")
     args, unknown = parser.parse_known_args()
     path_to_config_file = args.config
+    path_to_log_file = args.log
 
     if not os.path.isfile(path_to_config_file):
         exit()
@@ -313,22 +316,39 @@ def get_config_file(args):
     with open(path_to_config_file) as f_:
         site_administrator_emails = json.load(f_)
 
-    return site_administrator_emails
+    return site_administrator_emails, path_to_log_file
 
 
 def main(app, *args):
+    configurations = get_configs(args)
+    logger = setup_logger(configurations[1])
+    logger.info('Linkchecker instance started as expected.')
+
     plone_site_objs = list(_get_plone_sites(app))
-    site_administrator_emails = get_config_file(args)
+    site_administrator_emails = configurations[0]
+
+    logger.info(
+        'Found site administrators email addresses for: %s' % ', '.join(
+            site_administrator_emails))
 
     for plone_site_obj in plone_site_objs:
+        setup_plone(app, plone_site_obj)
+
         portal_path = '/'.join(api.portal.get().getPhysicalPath())
         email_address = site_administrator_emails[portal_path]
 
-        setup_plone(app, plone_site_obj)
         total_time_and_link_objs = get_total_fetching_time_and_broken_link_objs()
 
         time_for_fetching_external_links = total_time_and_link_objs[0]
         link_objs = total_time_and_link_objs[1]
+
+        logger.info(
+            'Finished going through all brains of "{}" and fetching for '
+            'external Links. Total time fetching for external Links: '
+            '{}ms. In total there were {} links validated.'.format(
+                plone_site_obj.title,
+                time_for_fetching_external_links,
+                link_objs[0].counter))
 
         create_and_send_mailreport_to_plone_site_responible_person(
             email_address, link_objs, plone_site_obj,

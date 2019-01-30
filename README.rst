@@ -45,11 +45,11 @@ portal paths and their site administrators email addresses like:
 Usage
 =====
 
-The linkchecker can be started with:
+The linkchecker can be started with (`--log logpath` optional):
 
 ::
 
-    bin/instance check_links --config path/to/config/file.json
+    bin/instance check_links --config path/to/config/file.json --log path/to/logfile.log
 
 
 Development
