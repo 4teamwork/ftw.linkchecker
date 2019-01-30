@@ -321,8 +321,8 @@ def main(app, *args):
     site_administrator_emails = get_config_file(args)
 
     for plone_site_obj in plone_site_objs:
-        plone_site_id = plone_site_obj.getId()
-        email_address = site_administrator_emails[plone_site_id]
+        portal_path = '/'.join(api.portal.get().getPhysicalPath())
+        email_address = site_administrator_emails[portal_path]
 
         setup_plone(app, plone_site_obj)
         total_time_and_link_objs = get_total_fetching_time_and_broken_link_objs()

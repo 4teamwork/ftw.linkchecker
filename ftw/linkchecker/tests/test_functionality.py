@@ -9,6 +9,7 @@ from ftw.linkchecker.command import checking_links
 from ftw.linkchecker.tests import FunctionalTestCase
 from ftw.linkchecker.tests import MultiPageTestCase
 from ftw.testing.mailing import Mailing
+from plone import api
 from zope.component.hooks import setSite
 import email
 import os
@@ -34,14 +35,16 @@ class TestFindingLinksAndRelations(MultiPageTestCase):
 
     def test_email_addresses_correspond_to_correct_plone_site(self):
         site_administrator_emails = {
-            "plone": "hugo.boss@4teamwork.ch",
-            "plone2": "berta.huber@gmail.com"
+            "/plone": "hugo.boss@4teamwork.ch",
+            "/plone2": "berta.huber@gmail.com"
         }
 
-        plone_site_id_0 = self.plone_site_objs[0].getId()
+        setSite(self.plone_site_objs[0])
+        plone_site_id_0 = '/'.join(api.portal.get().getPhysicalPath())
         email_address_0 = site_administrator_emails[plone_site_id_0]
 
-        plone_site_id_1 = self.plone_site_objs[1].getId()
+        setSite(self.plone_site_objs[1])
+        plone_site_id_1 = '/'.join(api.portal.get().getPhysicalPath())
         email_address_1 = site_administrator_emails[plone_site_id_1]
 
         self.assertEqual(

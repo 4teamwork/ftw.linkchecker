@@ -31,14 +31,14 @@ Installation
         ftw.linkchecker
 
 
-One needs to add a config file (e.g. linkchecker_config.json) holding the sites
-ids and their site administrators email addresses like:
+One needs to add a config file (e.g. linkchecker_config.json) holding the
+portal paths and their site administrators email addresses like:
 
 ::
 
     {
-      "plone-site-id-one": "hugo.boss@4teamwork.com",
-      "plone-site-id-one": "sec_site_admin@4teamwork.com"
+      "/portal/path-one": "first_site_admin@example.com",
+      "/portal/path-two": "second_site_admin@example.com"
     }
 
 
