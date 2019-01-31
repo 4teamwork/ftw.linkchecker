@@ -25,7 +25,7 @@ from zope.schema import getFieldsInOrder
 from zope.schema.interfaces import IURI
 import AccessControl
 import argparse
-import json 
+import json
 import os
 import re
 
@@ -124,6 +124,12 @@ def find_links_on_brain_fields(brain):
         # is not dexterity
         for field in obj.Schema().fields():
             content = field.getRaw(obj)
+            # if there is a string having a valid scheme it will be embedded
+            # into a href, so we can use the same method as for the dexterity
+            # strings and do not need to change the main use case.
+            if isinstance(content, basestring):
+                if urlparse(content).scheme:
+                    content = 'href="%s"' % content
             extract_and_append_link_objs(content, obj, link_objs)
 
     if queryUtility(IDexterityFTI, name=obj.portal_type):
