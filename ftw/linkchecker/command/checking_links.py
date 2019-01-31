@@ -1,4 +1,5 @@
 from AccessControl.SecurityManagement import newSecurityManager
+from Products.Archetypes.Field import ReferenceField
 from Products.CMFPlone.interfaces import IPloneSiteRoot
 from Testing.makerequest import makerequest
 from ftw.linkchecker import linkchecker
@@ -124,12 +125,18 @@ def find_links_on_brain_fields(brain):
         # is not dexterity
         for field in obj.Schema().fields():
             content = field.getRaw(obj)
+            if isinstance(field, ReferenceField):
+                uid = content
+                append_to_link_and_relation_information_for_different_link_types(
+                    [[], uid, []], link_objs, obj)
+
+            if not isinstance(content, basestring):
+                continue
             # if there is a string having a valid scheme it will be embedded
             # into a href, so we can use the same method as for the dexterity
             # strings and do not need to change the main use case.
-            if isinstance(content, basestring):
-                if urlparse(content).scheme:
-                    content = 'href="%s"' % content
+            if urlparse(content).scheme:
+                content = 'href="%s"' % content
             extract_and_append_link_objs(content, obj, link_objs)
 
     if queryUtility(IDexterityFTI, name=obj.portal_type):
@@ -233,7 +240,8 @@ def extract_links_in_string(input_string, obj):
 
 
 def extract_relation_uids_in_string(input_string):
-    regex = re.compile('^[./]*resolve[Uu]id/([^/]*)/?(.*)$')
+    regex = re.compile('resolveuid/(\w{32})', flags=re.IGNORECASE)
+
     return re.findall(regex, input_string)
 
 
