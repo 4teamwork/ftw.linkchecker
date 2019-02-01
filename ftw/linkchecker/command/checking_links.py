@@ -127,6 +127,11 @@ def find_links_on_brain_fields(brain):
             content = field.getRaw(obj)
             if isinstance(field, ReferenceField):
                 uid = content
+                try:
+                    uid_from_relation = obj['at_ordered_refs']['relatesTo']
+                except Exception:
+                    uid_from_relation = []
+                uid.extend(uid_from_relation)
                 append_to_link_and_relation_information_for_different_link_types(
                     [[], uid, []], link_objs, obj)
 

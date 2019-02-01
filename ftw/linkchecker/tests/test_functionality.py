@@ -6,6 +6,7 @@ from ftw.linkchecker.cell_format import DEFAULT_FONTNAME
 from ftw.linkchecker.cell_format import DEFAULT_FONTSIZE
 from ftw.linkchecker.command import broken_link
 from ftw.linkchecker.command import checking_links
+from ftw.linkchecker.tests import ArchetypeFunctionalTestCase
 from ftw.linkchecker.tests import FunctionalTestCase
 from ftw.linkchecker.tests import MultiPageTestCase
 from ftw.testing.mailing import Mailing
@@ -16,6 +17,49 @@ import os
 import pandas as pd
 
 CURRENT_PATH = os.path.dirname(os.path.abspath(__file__))
+
+
+class TestArchetypeLink(ArchetypeFunctionalTestCase):
+
+    def test_external_link(self):
+        self.helper_check_links()
+
+        self.assertIn('/plone/ftw-simplelayout-contentpage/archetype-link-1',
+                      self.paths_from,
+                      'Testing a broken external archetype link: It is'
+                      'expected that we find archetype-link-1 in the broken'
+                      'link list because it is pointing to '
+                      '"http://localhost:55001/plone/ImWearingAnInvisibilityCloak".')
+
+        self.assertNotIn('/plone/ftw-simplelayout-contentpage/archetype-link',
+                         self.paths_from,
+                         'Testing a working external archetype link: It is'
+                         'expected that we don\'t find archetype-link in the '
+                         'broken link list because it is pointing to '
+                         '"http://localhost:55001/plone".')
+
+    def test_relation(self):
+        self.helper_check_links()
+
+        self.assertIn('/plone/ftw-simplelayout-contentpage/archetype-link-3',
+                      self.paths_from,
+                      'Testing a broken archetype relation: It is expected '
+                      'that we find archetype-link-3 in the broken link list '
+                      'because it is pointing to a deleted object.')
+
+        self.assertNotIn(
+            '/plone/ftw-simplelayout-contentpage/archetype-link-2',
+            self.paths_from,
+            'Testing a valid archetype relation: It is expected '
+            'that we don\'t find archetype-link-2 in the broken '
+            'link list because it is pointing to a valid object.')
+
+    def helper_check_links(self):
+        setSite(self.portal)
+        checking_links.setup_plone(self.app, self.plone_site_objs[0])
+        broken_relations_and_links_info = checking_links.get_total_fetching_time_and_broken_link_objs()
+        self.paths_from = [list_element.link_origin for list_element in
+                           broken_relations_and_links_info[1]]
 
 
 class TestFindingLinksAndRelations(MultiPageTestCase):

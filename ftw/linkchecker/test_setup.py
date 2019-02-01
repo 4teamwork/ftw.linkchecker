@@ -15,6 +15,33 @@ def add_textarea_to_plone_site(portal):
     return textarea_having_link
 
 
+def add_archetype_link_to_plone_site(portal):
+    fti = portal.portal_types.get('ftw.simplelayout.ContentPage')
+    fti.allowed_content_types = tuple(
+        list(fti.allowed_content_types) + ['Link'])
+    page = create(Builder('sl content page'))
+    page_to_delete = create(Builder('sl content page'))
+    page_which_stays = create(Builder('sl content page'))
+
+    create(Builder('link').titled(u'archetype link')
+           .within(page)
+           .having(remoteUrl=portal.absolute_url()))
+    create(Builder('link').titled(u'archetype link').within(page).having(
+        remoteUrl=portal.absolute_url() + '/ImWearingAnInvisibilityCloak'))
+    create(Builder('link').titled(u'archetype link')
+           .within(page)
+           .having(remoteUrl=portal.absolute_url(),
+                   relatedItems=page_which_stays.UID()))
+    create(Builder('link').titled(u'archetype link')
+           .within(page)
+           .having(remoteUrl=portal.absolute_url(),
+                   relatedItems=page_to_delete.UID()))
+
+    # delete this obj, so the reference will be broken
+    parent = page_to_delete.aq_parent
+    parent.manage_delObjects([page_to_delete.getId()])
+
+
 def set_up_test_environment(portal):
     """Set up two plone sites. Both plone sites having the same content.
     Plone sites have working and broken relations and external links.
