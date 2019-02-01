@@ -1,6 +1,8 @@
 from Products.CMFPlone.utils import safe_unicode
 from ftw.linkchecker.command import broken_link
 from io import BytesIO
+from plone import api
+import re
 import xlsxwriter
 
 LABELS = broken_link.BrokenLink()
@@ -38,6 +40,12 @@ class ReportCreator(object):
                 int_ext_link = 'Internal Link'
             elif link_obj.is_internal is False:
                 int_ext_link = 'External Link'
+
+            # remove portal path in link_target and link_origin
+            portal_path_segments = api.portal.get().getPhysicalPath()
+            portal_reg = re.compile('^' + '/'.join(portal_path_segments))
+            link_obj.link_origin = re.sub(portal_reg, '', link_obj.link_origin)
+            link_obj.link_target = re.sub(portal_reg, '', link_obj.link_target)
 
             self.worksheet.write(self.row, 0, int_ext_link, format)
             self.worksheet.write(self.row, 1,
