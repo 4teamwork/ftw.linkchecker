@@ -275,22 +275,23 @@ def append_to_link_and_relation_information_for_different_link_types(
 
 def create_and_send_mailreport_to_plone_site_responible_person(
         email_address, link_objs, plone_site_obj,
-        total_time_fetching_external):
+        total_time_fetching_external, base_uri):
     xlsx_file = create_excel_report_and_return_filepath(
-        link_objs)
+        link_objs, base_uri)
     send_mail_with_excel_report_attached(email_address, plone_site_obj,
                                          total_time_fetching_external,
                                          xlsx_file)
 
 
-def create_excel_report_and_return_filepath(link_objs):
+def create_excel_report_and_return_filepath(link_objs, base_uri):
     file_i = report_generating.ReportCreator()
     file_i.append_report_data(report_generating.LABELS,
+                              base_uri,
                               BOLD &
                               CENTER &
                               DEFAULT_FONTNAME &
                               DEFAULT_FONTSIZE)
-    file_i.append_report_data(link_objs,
+    file_i.append_report_data(link_objs, base_uri,
                               DEFAULT_FONTNAME &
                               DEFAULT_FONTSIZE)
 
@@ -333,9 +334,9 @@ def get_configs(args):
         exit()
 
     with open(path_to_config_file) as f_:
-        site_administrator_emails = json.load(f_)
+        config = json.load(f_)
 
-    return site_administrator_emails, path_to_log_file
+    return config, path_to_log_file
 
 
 def main(app, *args):
@@ -344,17 +345,18 @@ def main(app, *args):
     logger.info('Linkchecker instance started as expected.')
 
     plone_site_objs = list(_get_plone_sites(app))
-    site_administrator_emails = configurations[0]
+    config_file = configurations[0]
 
     logger.info(
         'Found site administrators email addresses for: %s' % ', '.join(
-            site_administrator_emails))
+            [x['email'] for x in config_file.values()]))
 
     for plone_site_obj in plone_site_objs:
         setup_plone(app, plone_site_obj)
 
         portal_path = '/'.join(api.portal.get().getPhysicalPath())
-        email_address = site_administrator_emails[portal_path]
+        email_address = config_file[portal_path]['email']
+        base_uri = config_file[portal_path]['base_uri']
 
         total_time_and_link_objs = get_total_fetching_time_and_broken_link_objs()
 
@@ -371,4 +373,4 @@ def main(app, *args):
 
         create_and_send_mailreport_to_plone_site_responible_person(
             email_address, link_objs, plone_site_obj,
-            time_for_fetching_external_links)
+            time_for_fetching_external_links, base_uri)

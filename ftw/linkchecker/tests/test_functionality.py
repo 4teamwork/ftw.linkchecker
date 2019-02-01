@@ -352,13 +352,16 @@ class TestShippingInformation(FunctionalTestCase):
         example_data.error_message = 'sheet'
         exemplar_report_data = [example_data] * 9
 
+        base_uri = 'http://www.example_uri.com'
         file_i = report_generating.ReportCreator()
         file_i.append_report_data(report_generating.LABELS,
+                                  base_uri,
                                   BOLD &
                                   CENTER &
                                   DEFAULT_FONTNAME &
                                   DEFAULT_FONTSIZE)
         file_i.append_report_data(exemplar_report_data,
+                                  base_uri,
                                   DEFAULT_FONTNAME &
                                   DEFAULT_FONTSIZE)
         file_i.add_general_autofilter()

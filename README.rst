@@ -32,14 +32,21 @@ Installation
 
 
 One needs to add a config file (e.g. linkchecker_config.json) holding the
-portal paths and their site administrators email addresses like:
+portal paths, their site administrators email addresses and their domains like:
 
 ::
 
     {
-      "/portal/path-one": "first_site_admin@example.com",
-      "/portal/path-two": "second_site_admin@example.com"
+      "/portal/path-one": {
+        "email": "first_site_admin@example.com",
+        "base_uri": "http://example1.ch"
+      },
+      "/portal/path-two": {
+        "email": "second_site_admin@example.com",
+        "base_uri": "http://example2.ch"
+      }
     }
+
 
 
 Usage
@@ -49,7 +56,7 @@ The linkchecker can be started with (`--log logpath` optional):
 
 ::
 
-    bin/instance check_links --config path/to/config/file.json --log path/to/logfile.log
+    bin/instance check_links config path/to/config/file.json --log path/to/logfile.log
 
 
 Development

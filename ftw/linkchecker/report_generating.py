@@ -29,7 +29,7 @@ class ReportCreator(object):
         self.worksheet = self.workbook.add_worksheet()
         self.table = []
 
-    def append_report_data(self, link_objs, format=None):
+    def append_report_data(self, link_objs, base_uri, format=None):
         format = format.get_workbook_format(self.workbook) if format else None
         for link_obj in link_objs:
 
@@ -44,8 +44,10 @@ class ReportCreator(object):
             # remove portal path in link_target and link_origin
             portal_path_segments = api.portal.get().getPhysicalPath()
             portal_reg = re.compile('^' + '/'.join(portal_path_segments))
-            link_obj.link_origin = re.sub(portal_reg, '', link_obj.link_origin)
-            link_obj.link_target = re.sub(portal_reg, '', link_obj.link_target)
+            link_obj.link_origin = re.sub(portal_reg, base_uri,
+                                          link_obj.link_origin)
+            link_obj.link_target = re.sub(portal_reg, base_uri,
+                                          link_obj.link_target)
 
             self.worksheet.write(self.row, 0, int_ext_link, format)
             self.worksheet.write(self.row, 1,
