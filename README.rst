@@ -31,19 +31,26 @@ Installation
         ftw.linkchecker
 
 
-One needs to add a config file (e.g. linkchecker_config.json) holding the
-portal paths, their site administrators email addresses and their domains like:
+One needs to add a config file (e.g. linkchecker_config.json) holding:
+
+- portal path (unique identifier of the platform)
+- email of the platforms administrator (the one who gets the report)
+- base URI (domain where the platform is configured)
+- timeout in seconds (how long the script waits for each external link before
+  continuing if the page does not respond).
 
 ::
 
     {
       "/portal/path-one": {
         "email": "first_site_admin@example.com",
-        "base_uri": "http://example1.ch"
+        "base_uri": "http://example1.ch",
+        "timeout_config": "1"
       },
       "/portal/path-two": {
         "email": "second_site_admin@example.com",
-        "base_uri": "http://example2.ch"
+        "base_uri": "http://example2.ch",
+        "timeout_config": "1"
       }
     }
 
@@ -56,7 +63,7 @@ The linkchecker can be started with (`--log logpath` optional):
 
 ::
 
-    bin/instance check_links config path/to/config/file.json --log path/to/logfile.log
+    bin/instance check_links --config path/to/config/file.json --log path/to/logfile.log
 
 
 Development

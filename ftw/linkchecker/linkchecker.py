@@ -3,8 +3,6 @@ import os
 import requests
 import time
 
-TIMEOUT = 1
-
 
 def millis():
     return int(round(time.time() * 1000))
@@ -52,7 +50,9 @@ def limit_cpu():
     os.nice(19)
 
 
-def work_through_urls(external_link_objs):
+def work_through_urls(external_link_objs, timeout_config):
+    global TIMEOUT
+    TIMEOUT = timeout_config
     pool = Pool(initializer=limit_cpu)
     start_time = millis()
     external_link_objs = pool.map(get_uri_response, external_link_objs)

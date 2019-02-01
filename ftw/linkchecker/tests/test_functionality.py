@@ -9,6 +9,7 @@ from ftw.linkchecker.command import checking_links
 from ftw.linkchecker.tests import ArchetypeFunctionalTestCase
 from ftw.linkchecker.tests import FunctionalTestCase
 from ftw.linkchecker.tests import MultiPageTestCase
+from ftw.linkchecker.tests.exemplar_data.exemplar_config import config_file
 from ftw.testing.mailing import Mailing
 from plone import api
 from zope.component.hooks import setSite
@@ -57,7 +58,10 @@ class TestArchetypeLink(ArchetypeFunctionalTestCase):
     def helper_check_links(self):
         setSite(self.portal)
         checking_links.setup_plone(self.app, self.plone_site_objs[0])
-        broken_relations_and_links_info = checking_links.get_total_fetching_time_and_broken_link_objs()
+        email_address, base_uri, timeout_config = checking_links.extract_config(
+            config_file)
+        broken_relations_and_links_info = checking_links.get_total_fetching_time_and_broken_link_objs(
+            int(timeout_config))
         self.paths_from = [list_element.link_origin for list_element in
                            broken_relations_and_links_info[1]]
 
@@ -78,18 +82,12 @@ class TestFindingLinksAndRelations(MultiPageTestCase):
             'plone sites found.')
 
     def test_email_addresses_correspond_to_correct_plone_site(self):
-        site_administrator_emails = {
-            "/plone": "hugo.boss@4teamwork.ch",
-            "/plone2": "berta.huber@gmail.com"
-        }
-
         setSite(self.plone_site_objs[0])
-        plone_site_id_0 = '/'.join(api.portal.get().getPhysicalPath())
-        email_address_0 = site_administrator_emails[plone_site_id_0]
-
+        email_address_0, base_uri0, timeout_config0 = checking_links.extract_config(
+            config_file)
         setSite(self.plone_site_objs[1])
-        plone_site_id_1 = '/'.join(api.portal.get().getPhysicalPath())
-        email_address_1 = site_administrator_emails[plone_site_id_1]
+        email_address_1, base_uri1, timeout_config1 = checking_links.extract_config(
+            config_file)
 
         self.assertEqual(
             email_address_0,
@@ -103,9 +101,20 @@ class TestFindingLinksAndRelations(MultiPageTestCase):
             'It is expected that the email address for page 1 is corresponding'
             'to its test site administrators email (berta.huber@gmail.com).')
 
+        self.assertEqual(base_uri0, 'http://example1.ch',
+                         'It is expected that the value was extracted from '
+                         'the dictionary.')
+
+        self.assertEqual(timeout_config0, '1',
+                         'It is expected that the value was extracted from '
+                         'the dictionary.')
+
     def helper_function_getting_getting_link_information(self):
         checking_links.setup_plone(self.app, self.plone_site_objs[0])
-        broken_relations_and_links_info = checking_links.get_total_fetching_time_and_broken_link_objs()
+        email_address, base_uri, timeout_config = checking_links.extract_config(
+            config_file)
+        broken_relations_and_links_info = checking_links.get_total_fetching_time_and_broken_link_objs(
+            int(timeout_config))
         self.paths_from = [list_element.link_origin for list_element in
                            broken_relations_and_links_info[1]]
 

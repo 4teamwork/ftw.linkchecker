@@ -89,7 +89,7 @@ def setup_plone(app, plone_site_obj):
     setSite(plone_site_obj)
 
 
-def get_total_fetching_time_and_broken_link_objs():
+def get_total_fetching_time_and_broken_link_objs(timeout_config):
     portal_catalog = api.portal.get_tool('portal_catalog')
     brains = portal_catalog.unrestrictedSearchResults()
     link_objs = []
@@ -105,7 +105,7 @@ def get_total_fetching_time_and_broken_link_objs():
             external_link_objs.append(link_obj)
 
     external_link_objs_and_total_time = linkchecker.work_through_urls(
-        external_link_objs)
+        external_link_objs, timeout_config)
 
     external_link_objs, total_time = external_link_objs_and_total_time
 
@@ -339,6 +339,15 @@ def get_configs(args):
     return config, path_to_log_file
 
 
+def extract_config(config_file):
+    portal_path = '/'.join(api.portal.get().getPhysicalPath())
+    email_address = config_file[portal_path]['email']
+    base_uri = config_file[portal_path]['base_uri']
+    timeout_config = config_file[portal_path]['timeout_config']
+
+    return email_address, base_uri, timeout_config
+
+
 def main(app, *args):
     configurations = get_configs(args)
     logger = setup_logger(configurations[1])
@@ -353,12 +362,10 @@ def main(app, *args):
 
     for plone_site_obj in plone_site_objs:
         setup_plone(app, plone_site_obj)
+        email_address, base_uri, timeout_config = extract_config(config_file)
 
-        portal_path = '/'.join(api.portal.get().getPhysicalPath())
-        email_address = config_file[portal_path]['email']
-        base_uri = config_file[portal_path]['base_uri']
-
-        total_time_and_link_objs = get_total_fetching_time_and_broken_link_objs()
+        total_time_and_link_objs = get_total_fetching_time_and_broken_link_objs(
+            int(timeout_config))
 
         time_for_fetching_external_links = total_time_and_link_objs[0]
         link_objs = total_time_and_link_objs[1]
