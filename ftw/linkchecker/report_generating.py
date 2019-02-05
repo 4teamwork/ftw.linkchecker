@@ -16,8 +16,6 @@ LABELS.header_location = 'Header Location'
 LABELS.error_message = 'Error Message'
 LABELS = [LABELS]
 
-NUMBER_OF_LABELS = 8
-
 
 class ReportCreator(object):
 
@@ -70,7 +68,8 @@ class ReportCreator(object):
         self.table.extend(link_objs)
 
     def add_general_autofilter(self):
-        self.worksheet.autofilter(0, 0, self.row, NUMBER_OF_LABELS - 1)
+        self.worksheet.autofilter(0, 0, self.row,
+                                  len(LABELS[0].table_attrs) - 1)
 
     def get_column_widths(self):
         columns_size = [0] * len(self.table[0].table_attrs)
