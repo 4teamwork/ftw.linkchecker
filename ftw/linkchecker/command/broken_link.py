@@ -30,9 +30,6 @@ class BrokenLink(object):
             value = getattr(self, attr, '')
             yield value if isinstance(value, basestring) else ''
 
-    def __len__(self):
-        return len(self.table_attrs)
-
     def complete_information_with_internal_path(self, obj_having_path, path):
         # relation not broken if possible to traverse to
         try:

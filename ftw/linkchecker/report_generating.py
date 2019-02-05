@@ -73,7 +73,7 @@ class ReportCreator(object):
         self.worksheet.autofilter(0, 0, self.row, NUMBER_OF_LABELS - 1)
 
     def get_column_widths(self):
-        columns_size = [0] * len(self.table[0])
+        columns_size = [0] * len(self.table[0].table_attrs)
         for row in self.table:
             for j, column_element in enumerate(row):
                 columns_size[j] = max(columns_size[j], len(column_element))
