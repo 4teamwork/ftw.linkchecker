@@ -373,10 +373,9 @@ def main(app, *args):
         logger.info(
             'Finished going through all brains of "{}" and fetching for '
             'external Links. Total time fetching for external Links: '
-            '{}ms. In total there were {} links validated.'.format(
+            '{}ms.'.format(
                 plone_site_obj.title,
-                time_for_fetching_external_links,
-                link_objs[0].counter))
+                time_for_fetching_external_links))
 
         create_and_send_mailreport_to_plone_site_responible_person(
             email_address, link_objs, plone_site_obj,
