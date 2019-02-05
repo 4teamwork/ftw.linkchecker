@@ -1,7 +1,7 @@
 from Acquisition import aq_parent
 from ftw.linkchecker.command import checking_links
 from ftw.linkchecker.test_setup import add_archetype_link_to_plone_site
-from ftw.linkchecker.test_setup import add_textarea_to_plone_site
+from ftw.linkchecker.test_setup import add_textarea_to_page
 from ftw.linkchecker.test_setup import set_up_test_environment
 from ftw.linkchecker.testing import ADDITIONAL_PAGES_TO_SETUP
 from ftw.linkchecker.testing import LINKCHECKER_FUNCTIONAL
@@ -17,7 +17,7 @@ class FunctionalTestCase(TestCase):
     def setUp(self):
         self.request = self.layer['request']
         self.portal = self.layer['portal']
-        self.textarea = add_textarea_to_plone_site(self.portal)
+        self.textarea = add_textarea_to_page(self.portal)
 
     def grant(self, portal=None, *roles):
         if isinstance(portal, str):

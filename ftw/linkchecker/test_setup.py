@@ -5,7 +5,7 @@ from z3c.relationfield import RelationValue
 from zope.component.hooks import setSite
 
 
-def add_textarea_to_plone_site(portal):
+def add_textarea_to_page(portal):
     setSite(portal)
     content_page = create(Builder('sl content page').titled(u'contentpage'))
     textarea_having_link = create(Builder('sl textblock')
