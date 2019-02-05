@@ -5,6 +5,43 @@ from z3c.relationfield import RelationValue
 from zope.component.hooks import setSite
 
 
+def add_textarea_to_page(portal):
+    setSite(portal)
+    content_page = create(Builder('sl content page').titled(u'contentpage'))
+    textarea_having_link = create(Builder('sl textblock')
+                                  .within(content_page)
+                                  .having(text=RichTextValue('...'))
+                                  .titled('textarea'))
+    return textarea_having_link
+
+
+def add_archetype_link_to_plone_site(portal):
+    fti = portal.portal_types.get('ftw.simplelayout.ContentPage')
+    fti.allowed_content_types = tuple(
+        list(fti.allowed_content_types) + ['Link'])
+    page = create(Builder('sl content page'))
+    page_to_delete = create(Builder('sl content page'))
+    page_which_stays = create(Builder('sl content page'))
+
+    create(Builder('link').titled(u'archetype link')
+           .within(page)
+           .having(remoteUrl=portal.absolute_url()))
+    create(Builder('link').titled(u'archetype link').within(page).having(
+        remoteUrl=portal.absolute_url() + '/ImWearingAnInvisibilityCloak'))
+    create(Builder('link').titled(u'archetype link')
+           .within(page)
+           .having(remoteUrl=portal.absolute_url(),
+                   relatedItems=page_which_stays.UID()))
+    create(Builder('link').titled(u'archetype link')
+           .within(page)
+           .having(remoteUrl=portal.absolute_url(),
+                   relatedItems=page_to_delete.UID()))
+
+    # delete this obj, so the reference will be broken
+    parent = page_to_delete.aq_parent
+    parent.manage_delObjects([page_to_delete.getId()])
+
+
 def set_up_test_environment(portal):
     """Set up two plone sites. Both plone sites having the same content.
     Plone sites have working and broken relations and external links.
@@ -120,21 +157,8 @@ def set_up_test_environment(portal):
             'ext_url': None,
             'text': None,
             'textblock_within1': pages[6],
-            'textblock_url1': 'resolveuid/' + pages[8].UID(),
-            'textblock_within2': pages[6],
-            'textblock_url2': 'resolveuid/99999999999999999999999999999999',
-        },
-        {
-            'test_number': '7',
-            'content_type': 'sl content page',
-            'within': pages[7],
-            'title': 'Content page on page 7',
-            'int_url': None,
-            'ext_url': None,
-            'text': None,
-            'textblock_within1': pages[7],
             'textblock_url1': portal.absolute_url(),
-            'textblock_within2': pages[7],
+            'textblock_within2': pages[6],
             'textblock_url2': portal.absolute_url() + '/Sadnottoexist',
         },
     ]

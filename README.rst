@@ -31,15 +31,39 @@ Installation
         ftw.linkchecker
 
 
-In the file `ftw/linkchecker/site_administrator_emails.json` one can configure
-a site administrator per plone site by plone site id.
+One needs to add a config file (e.g. linkchecker_config.json) holding:
+
+- portal path (unique identifier of the platform)
+- email of the platforms administrator (the one who gets the report)
+- base URI (domain where the platform is configured)
+- timeout in seconds (how long the script waits for each external link before
+  continuing if the page does not respond).
 
 ::
 
     {
-      "plone-site-id-one": "hugo.boss@4teamwork.com",
-      "plone-site-id-one": "sec_site_admin@4teamwork.com"
+      "/portal/path-one": {
+        "email": "first_site_admin@example.com",
+        "base_uri": "http://example1.ch",
+        "timeout_config": "1"
+      },
+      "/portal/path-two": {
+        "email": "second_site_admin@example.com",
+        "base_uri": "http://example2.ch",
+        "timeout_config": "1"
+      }
     }
+
+
+
+Usage
+=====
+
+The linkchecker can be started with (`--log logpath` optional):
+
+::
+
+    bin/instance check_links --config path/to/config/file.json --log path/to/logfile.log
 
 
 Development
