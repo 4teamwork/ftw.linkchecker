@@ -73,6 +73,9 @@ class ReportCreator(object):
         for row in self.table:
             for j, column_element in enumerate(row):
                 columns_size[j] = max(columns_size[j], len(column_element))
+                # enlarge column width by content up to 100 characters
+                if columns_size[j] > 100:
+                    columns_size[j] = 100
         return columns_size
 
     def cell_width_autofitter(self):
