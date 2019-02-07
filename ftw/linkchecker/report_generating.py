@@ -35,6 +35,7 @@ class ReportCreator(object):
                 int_ext_link = 'Unknown'
             elif link_obj.is_internal is True:
                 int_ext_link = 'Internal Link'
+                link_obj.status_code = 404
             elif link_obj.is_internal is False:
                 int_ext_link = 'External Link'
 
