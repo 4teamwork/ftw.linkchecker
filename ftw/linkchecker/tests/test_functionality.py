@@ -357,7 +357,6 @@ class TestShippingInformation(FunctionalTestCase):
         example_data.status_code = 'to'
         example_data.content_type = 'fill'
         example_data.response_time = 'the'
-        example_data.header_location = 'excel'
         example_data.error_message = 'sheet'
         exemplar_report_data = [example_data] * 9
 

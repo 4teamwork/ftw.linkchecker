@@ -40,7 +40,6 @@ def get_uri_response(external_link_obj):
         external_link_obj.status_code = getattr(response, 'status_code', None)
         external_link_obj.content_type = headers.get('Content-Type', None)
         external_link_obj.response_time = time
-        external_link_obj.header_location = headers.get('Location', None)
         external_link_obj.error_message = error
 
     return external_link_obj

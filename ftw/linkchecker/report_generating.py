@@ -12,7 +12,6 @@ LABELS.link_target = 'Destination'
 LABELS.status_code = 'Status Code'
 LABELS.content_type = 'Content Type'
 LABELS.response_time = 'Response Time'
-LABELS.header_location = 'Header Location'
 LABELS.error_message = 'Error Message'
 LABELS = [LABELS]
 
@@ -59,9 +58,6 @@ class ReportCreator(object):
             self.worksheet.write(self.row, 5,
                                  safe_unicode(link_obj.response_time), format)
             self.worksheet.write(self.row, 6,
-                                 safe_unicode(link_obj.header_location),
-                                 format)
-            self.worksheet.write(self.row, 7,
                                  safe_unicode(link_obj.error_message), format)
 
             self.row += 1
