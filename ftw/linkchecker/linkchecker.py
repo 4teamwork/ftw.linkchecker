@@ -1,3 +1,4 @@
+from functools import partial
 from multiprocessing import Pool
 import os
 import requests
@@ -8,7 +9,7 @@ def millis():
     return int(round(time.time() * 1000))
 
 
-def get_uri_response(external_link_obj):
+def get_uri_response(external_link_obj, timeout):
     headers = {
         'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 Safari/537.36'
     }
@@ -17,7 +18,7 @@ def get_uri_response(external_link_obj):
     start_time = millis()
     try:
         response = requests.head(external_link_obj.link_target,
-                                 timeout=TIMEOUT,
+                                 timeout=timeout,
                                  headers=headers,
                                  allow_redirects=False,
                                  verify=False)
@@ -50,10 +51,9 @@ def limit_cpu():
 
 
 def work_through_urls(external_link_objs, timeout_config):
-    global TIMEOUT
-    TIMEOUT = timeout_config
+    part_get_uri_response = partial(get_uri_response, timeout=timeout_config)
     pool = Pool(initializer=limit_cpu)
     start_time = millis()
-    external_link_objs = pool.map(get_uri_response, external_link_objs)
+    external_link_objs = pool.map(part_get_uri_response, external_link_objs)
     total_time = millis() - start_time
     return external_link_objs, total_time
