@@ -12,7 +12,6 @@ LABELS.link_target = 'Destination'
 LABELS.status_code = 'Status Code'
 LABELS.content_type = 'Content Type'
 LABELS.response_time = 'Response Time'
-LABELS.header_location = 'Header Location'
 LABELS.error_message = 'Error Message'
 LABELS = [LABELS]
 
@@ -36,6 +35,7 @@ class ReportCreator(object):
                 int_ext_link = 'Unknown'
             elif link_obj.is_internal is True:
                 int_ext_link = 'Internal Link'
+                link_obj.status_code = 404
             elif link_obj.is_internal is False:
                 int_ext_link = 'External Link'
 
@@ -59,9 +59,6 @@ class ReportCreator(object):
             self.worksheet.write(self.row, 5,
                                  safe_unicode(link_obj.response_time), format)
             self.worksheet.write(self.row, 6,
-                                 safe_unicode(link_obj.header_location),
-                                 format)
-            self.worksheet.write(self.row, 7,
                                  safe_unicode(link_obj.error_message), format)
 
             self.row += 1
@@ -76,6 +73,9 @@ class ReportCreator(object):
         for row in self.table:
             for j, column_element in enumerate(row):
                 columns_size[j] = max(columns_size[j], len(column_element))
+                # enlarge column width by content up to 100 characters
+                if columns_size[j] > 100:
+                    columns_size[j] = 100
         return columns_size
 
     def cell_width_autofitter(self):

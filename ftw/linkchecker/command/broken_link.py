@@ -10,7 +10,6 @@ class BrokenLink(object):
         'status_code',
         'content_type',
         'response_time',
-        'header_location',
         'error_message',
     ]
 
@@ -22,7 +21,6 @@ class BrokenLink(object):
         self.status_code = 'Unknown status code'
         self.content_type = 'Unknown content type'
         self.response_time = 'Unknown response time'
-        self.header_location = 'Unknown header location'
         self.error_message = 'No error occurred'
 
     def __iter__(self):
