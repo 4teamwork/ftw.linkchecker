@@ -1,5 +1,6 @@
 from plone import api
 from plone.dexterity.utils import safe_utf8
+from plone.api.portal import get_tool
 
 
 class BrokenLink(object):
@@ -46,7 +47,8 @@ class BrokenLink(object):
         self.link_target = url
 
     def complete_information_with_internal_uid(self, obj_having_uid, uid):
-        if not api.content.get(UID=uid):
+        portal_catalog = get_tool('portal_catalog')
+        if not list(portal_catalog.unrestrictedSearchResults(UID=uid)):
             self.is_broken = True
             self.is_internal = True
             self.link_origin = '/'.join(obj_having_uid.getPhysicalPath())
