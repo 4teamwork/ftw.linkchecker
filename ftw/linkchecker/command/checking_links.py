@@ -140,7 +140,8 @@ def find_links_on_brain_fields(brain):
             # if there is a string having a valid scheme it will be embedded
             # into a href, so we can use the same method as for the dexterity
             # strings and do not need to change the main use case.
-            if urlparse(content).scheme:
+            scheme = urlparse(content).scheme
+            if scheme and scheme in ['http', 'https']:
                 content = 'href="%s"' % content
             extract_and_append_link_objs(content, obj, link_objs)
 
