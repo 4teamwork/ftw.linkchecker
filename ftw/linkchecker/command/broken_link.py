@@ -1,5 +1,9 @@
 from plone import api
+from plone.api.portal import get_tool
+from plone.app.redirector.interfaces import IRedirectionStorage
 from plone.dexterity.utils import safe_utf8
+from urlparse import urlparse
+from zope.component import getUtility
 
 
 class BrokenLink(object):
@@ -31,7 +35,11 @@ class BrokenLink(object):
     def complete_information_with_internal_path(self, obj_having_path, path):
         # relation not broken if possible to traverse to
         try:
-            api.portal.get().unrestrictedTraverse(safe_utf8(path))
+            path = urlparse(
+                safe_utf8(path).rstrip('/view').rstrip('/download')).path
+            storage = getUtility(IRedirectionStorage)
+            path = storage.get(path, path)
+            api.portal.get().unrestrictedTraverse(path)
             self.is_broken = False
             self.is_internal = True
         except Exception:
@@ -46,7 +54,8 @@ class BrokenLink(object):
         self.link_target = url
 
     def complete_information_with_internal_uid(self, obj_having_uid, uid):
-        if not api.content.get(UID=uid):
+        portal_catalog = get_tool('portal_catalog')
+        if not list(portal_catalog.unrestrictedSearchResults(UID=uid)):
             self.is_broken = True
             self.is_internal = True
             self.link_origin = '/'.join(obj_having_uid.getPhysicalPath())
