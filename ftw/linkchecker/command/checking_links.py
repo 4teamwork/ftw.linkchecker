@@ -1,6 +1,8 @@
 from AccessControl.SecurityManagement import newSecurityManager
+from Products.Archetypes.Field import ComputedField
 from Products.Archetypes.Field import ReferenceField
-from Products.CMFPlone.interfaces import IPloneSiteRoot
+from Products.Archetypes.Field import StringField
+from Products.Archetypes.Field import TextField
 from Testing.makerequest import makerequest
 from ftw.linkchecker import linkchecker
 from ftw.linkchecker import report_generating
@@ -124,6 +126,8 @@ def find_links_on_brain_fields(brain):
     if not queryUtility(IDexterityFTI, name=obj.portal_type):
         # is not dexterity
         for field in obj.Schema().fields():
+            if not isinstance(field, (TextField, ReferenceField, ComputedField, StringField)):
+                continue
             content = field.getRaw(obj)
             if isinstance(field, ReferenceField):
                 uid = content
