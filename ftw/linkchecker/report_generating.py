@@ -49,9 +49,11 @@ class ReportCreator(object):
 
             self.worksheet.write(self.row, 0, int_ext_link, format)
             self.worksheet.write(self.row, 1,
-                                 safe_unicode(link_obj.link_origin), format)
+                                 safe_unicode(link_obj.link_origin)[:254],
+                                 format)
             self.worksheet.write(self.row, 2,
-                                 safe_unicode(link_obj.link_target), format)
+                                 safe_unicode(link_obj.link_target)[:254],
+                                 format)
             self.worksheet.write(self.row, 3,
                                  safe_unicode(link_obj.status_code), format)
             self.worksheet.write(self.row, 4,
