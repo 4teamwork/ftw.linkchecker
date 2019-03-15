@@ -1,5 +1,6 @@
 from ftw.builder import Builder
 from ftw.builder import create
+from ftw.testbrowser import browsing
 from plone.app.textfield import RichTextValue
 from z3c.relationfield import RelationValue
 from zope.component.hooks import setSite
@@ -20,8 +21,12 @@ def add_archetype_link_to_plone_site(portal):
     fti.allowed_content_types = tuple(
         list(fti.allowed_content_types) + ['Link'])
     page = create(Builder('sl content page'))
-    page_to_delete = create(Builder('sl content page'))
-    page_which_stays = create(Builder('sl content page'))
+    link_to_delete = create(Builder('link').titled(u'test link')
+                            .within(page)
+                            .having(remoteUrl=portal.absolute_url()))
+    link_which_stays = create(Builder('link').titled(u'test link')
+                              .within(page)
+                              .having(remoteUrl=portal.absolute_url()))
 
     create(Builder('link').titled(u'archetype link')
            .within(page)
@@ -31,15 +36,15 @@ def add_archetype_link_to_plone_site(portal):
     create(Builder('link').titled(u'archetype link')
            .within(page)
            .having(remoteUrl=portal.absolute_url(),
-                   relatedItems=page_which_stays.UID()))
+                   relatedItems=link_which_stays.UID()))
     create(Builder('link').titled(u'archetype link')
            .within(page)
            .having(remoteUrl=portal.absolute_url(),
-                   relatedItems=page_to_delete.UID()))
+                   relatedItems=link_to_delete.UID()))
 
     # delete this obj, so the reference will be broken
-    parent = page_to_delete.aq_parent
-    parent.manage_delObjects([page_to_delete.getId()])
+    parent = link_to_delete.aq_parent
+    parent.manage_delObjects([link_to_delete.getId()])
 
 
 def set_up_test_environment(portal):
