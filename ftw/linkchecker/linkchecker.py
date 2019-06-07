@@ -20,8 +20,7 @@ def get_uri_response(external_link_obj, timeout):
         response = requests.head(external_link_obj.link_target,
                                  timeout=timeout,
                                  headers=headers,
-                                 allow_redirects=False,
-                                 verify=False)
+                                 allow_redirects=False)
     except requests.exceptions.Timeout:
         error = 'Timeout'
     except requests.exceptions.TooManyRedirects:
