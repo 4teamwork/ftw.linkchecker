@@ -13,6 +13,7 @@ LABELS.status_code = 'Status Code'
 LABELS.content_type = 'Content Type'
 LABELS.response_time = 'Response Time'
 LABELS.error_message = 'Error Message'
+LABELS.creator = 'Creator'
 LABELS = [LABELS]
 
 
@@ -62,6 +63,8 @@ class ReportCreator(object):
                                  safe_unicode(link_obj.response_time), format)
             self.worksheet.write(self.row, 6,
                                  safe_unicode(link_obj.error_message), format)
+            self.worksheet.write(self.row, 7,
+                                 safe_unicode(link_obj.creator), format)
 
             self.row += 1
         self.table.extend(link_objs)
