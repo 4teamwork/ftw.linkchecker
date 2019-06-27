@@ -15,6 +15,7 @@ class BrokenLink(object):
         'content_type',
         'response_time',
         'error_message',
+        'creator'
     ]
 
     def __init__(self):
@@ -26,6 +27,7 @@ class BrokenLink(object):
         self.content_type = 'Unknown content type'
         self.response_time = 'Unknown response time'
         self.error_message = 'No error occurred'
+        self.creator = 'Unknown creator'
 
     def __iter__(self):
         for attr in self.table_attrs:
@@ -47,11 +49,13 @@ class BrokenLink(object):
             self.is_internal = True
             self.link_origin = '/'.join(obj_having_path.getPhysicalPath())
             self.link_target = path
+            self.creator = obj_having_path.Creator()
 
     def complete_information_with_external_path(self, obj_having_path, url):
         self.is_internal = False
         self.link_origin = '/'.join(obj_having_path.getPhysicalPath())
         self.link_target = url
+        self.creator = obj_having_path.Creator()
 
     def complete_information_with_internal_uid(self, obj_having_uid, uid):
         portal_catalog = get_tool('portal_catalog')
@@ -60,6 +64,7 @@ class BrokenLink(object):
             self.is_internal = True
             self.link_origin = '/'.join(obj_having_uid.getPhysicalPath())
             self.link_target = uid
+            self.creator = obj_having_uid.Creator()
         else:
             self.is_broken = False
             self.is_internal = True
@@ -72,3 +77,4 @@ class BrokenLink(object):
         self.link_origin = '/'.join(
             obj_having_broken_relation.getPhysicalPath())
         self.link_target = 'Broken link in field: ' + str(field)
+        self.creator = obj_having_broken_relation.Creator()

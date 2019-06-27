@@ -358,6 +358,7 @@ class TestShippingInformation(FunctionalTestCase):
         example_data.content_type = 'fill'
         example_data.response_time = 'the'
         example_data.error_message = 'sheet'
+        example_data.creator = 'slowly'
         exemplar_report_data = [example_data] * 9
 
         base_uri = 'http://www.example_uri.com'
