@@ -7,25 +7,4 @@
 
     <five:registerPackage package="." initialize=".initialize" />
 
-    <genericsetup:registerProfile
-        name="default"
-        title="ftw.linkchecker default"
-        directory="profiles/default"
-        provides="Products.GenericSetup.interfaces.EXTENSION"
-        />
-
-    <genericsetup:registerProfile
-        name="uninstall"
-        title="ftw.linkchecker:uninstall"
-        directory="profiles/uninstall"
-        provides="Products.GenericSetup.interfaces.EXTENSION"
-        for="Products.CMFPlone.interfaces.IMigratingPloneSiteRoot"
-        />
-
-    <include package="ftw.upgrade" file="meta.zcml" />
-    <upgrade-step:directory
-        profile="ftw.linkchecker:default"
-        directory="upgrades"
-        />
-
 </configure>
