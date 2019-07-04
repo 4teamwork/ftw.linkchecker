@@ -134,7 +134,6 @@ class LinkcheckerLayer(PloneSandboxLayer):
                     setSite(site)
 
     def setUpPloneSite(self, portal):
-        applyProfile(portal, 'ftw.linkchecker:default')
         applyProfile(portal, 'ftw.simplelayout.contenttypes:default')
 
 
