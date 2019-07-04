@@ -1,7 +1,0 @@
-<?xml version="1.0"?>
-<layers>
-
-    <layer name="ftw.linkchecker"
-           interface="ftw.linkchecker.interfaces.IFtwLinkcheckerLayer" />
-
-</layers>
