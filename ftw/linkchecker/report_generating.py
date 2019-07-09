@@ -23,7 +23,8 @@ class ReportCreator(object):
         self.row = 0
         self.output_xlsx = BytesIO()
         self.workbook = xlsxwriter.Workbook(self.output_xlsx,
-                                            {'in_memory': True})
+                                            {'in_memory': True,
+                                             'strings_to_url': False})
         self.worksheet = self.workbook.add_worksheet()
         self.table = []
 
@@ -49,12 +50,12 @@ class ReportCreator(object):
                                           safe_unicode(link_obj.link_target))
 
             self.worksheet.write(self.row, 0, int_ext_link, format)
-            self.worksheet.write(self.row, 1,
-                                 safe_unicode(link_obj.link_origin)[:254],
-                                 format)
-            self.worksheet.write(self.row, 2,
-                                 safe_unicode(link_obj.link_target)[:254],
-                                 format)
+            self.worksheet.write_string(self.row, 1,
+                                        safe_unicode(link_obj.link_origin),
+                                        format)
+            self.worksheet.write_string(self.row, 2,
+                                        safe_unicode(link_obj.link_target),
+                                        format)
             self.worksheet.write(self.row, 3,
                                  safe_unicode(link_obj.status_code), format)
             self.worksheet.write(self.row, 4,
