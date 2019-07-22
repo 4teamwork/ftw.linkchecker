@@ -20,7 +20,8 @@ class MailSender(object):
             self.PLONE = portal
         setSite(self.PLONE)
 
-    def send_feedback(self, email_subject, email_message, receiver_email_address, xlsx_file):
+    def send_feedback(self, email_subject, email_message,
+                      receiver_email_address, xlsx_file, file_name):
         """Send an email including an excel workbook attached.
         """
         mh = plone.api.portal.get_tool('MailHost')
@@ -29,8 +30,6 @@ class MailSender(object):
 
         sender = 'Linkcheck Reporter'
         recipient = from_email
-        file_name = 'linkchecker_report_{}.xlsx'.format(
-            time.strftime('%Y_%b_%d_%H%M%S', time.gmtime()))
 
         msg = MIMEMultipart()
         msg['From'] = "%s <%s>" % (from_name, from_email)

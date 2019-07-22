@@ -30,7 +30,10 @@ import AccessControl
 import argparse
 import json
 import os
+import plone
 import re
+import time
+import transaction
 
 
 def count_parent_pointers(path_segments):
@@ -278,14 +281,10 @@ def append_to_link_and_relation_information_for_different_link_types(
         link_and_relation_information.append(link)
 
 
-def create_and_send_mailreport_to_plone_site_responible_person(
-        email_address, link_objs, plone_site_obj,
-        total_time_fetching_external, base_uri):
+def create_excel_report(link_objs, base_uri):
     xlsx_file = create_excel_report_and_return_filepath(
         link_objs, base_uri)
-    send_mail_with_excel_report_attached(email_address, plone_site_obj,
-                                         total_time_fetching_external,
-                                         xlsx_file)
+    return xlsx_file
 
 
 def create_excel_report_and_return_filepath(link_objs, base_uri):
@@ -309,7 +308,7 @@ def create_excel_report_and_return_filepath(link_objs, base_uri):
 
 def send_mail_with_excel_report_attached(email_address, plone_site_obj,
                                          total_time_fetching_external,
-                                         xlsx_file):
+                                         xlsx_file, file_name):
     email_subject = 'Linkchecker Report'
     email_message = '''
     Dear Site Administrator, \n\n
@@ -322,7 +321,25 @@ def send_mail_with_excel_report_attached(email_address, plone_site_obj,
     portal = api.content.get(plone_site_path)
     report_mailer_instance = report_mailer.MailSender(portal)
     report_mailer_instance.send_feedback(
-        email_subject, email_message, email_address, xlsx_file)
+        email_subject, email_message, email_address, xlsx_file, file_name)
+
+
+def upload_report_to_filelistingblock(filelistingblock_url, xlsx_file, file_name):
+    portal = api.portal.get()
+    try:
+        file_listing_block = portal.unrestrictedTraverse(path=filelistingblock_url.encode('utf-8'))
+    except Exception as e:
+        logger = setup_logger()
+        logger.exception("Error while uploading report: upload location is not a valid path: {}".format(
+            filelistingblock_url.encode('utf-8')))
+    else:
+        xlsx_file.seek(0)
+        data = xlsx_file.read()
+
+        file_ = plone.api.content.create(
+            container=file_listing_block, type='File', title=file_name, file=data)
+        file_.setFilename(file_name)
+        transaction.commit()
 
 
 def get_configs(args):
@@ -349,8 +366,14 @@ def extract_config(config_file):
     email_address = config_file[portal_path]['email']
     base_uri = config_file[portal_path]['base_uri']
     timeout_config = config_file[portal_path]['timeout_config']
+    upload_location = config_file[portal_path].get('upload_location', '')
 
-    return email_address, base_uri, timeout_config
+    return email_address, base_uri, timeout_config, upload_location
+
+
+def get_file_name():
+    return u'linkchecker_report_{}.xlsx'.format(
+        time.strftime('%Y_%b_%d_%H%M%S', time.gmtime()))
 
 
 def main(app, *args):
@@ -367,7 +390,7 @@ def main(app, *args):
 
     for plone_site_obj in plone_site_objs:
         setup_plone(app, plone_site_obj)
-        email_address, base_uri, timeout_config = extract_config(config_file)
+        email_address, base_uri, timeout_config, upload_location = extract_config(config_file)
 
         total_time_and_link_objs = get_total_fetching_time_and_broken_link_objs(
             int(timeout_config))
@@ -382,6 +405,9 @@ def main(app, *args):
                 plone_site_obj.title,
                 time_for_fetching_external_links))
 
-        create_and_send_mailreport_to_plone_site_responible_person(
-            email_address, link_objs, plone_site_obj,
-            time_for_fetching_external_links, base_uri)
+        xlsx_file = create_excel_report(link_objs, base_uri)
+        file_name = get_file_name()
+        send_mail_with_excel_report_attached(
+            email_address, plone_site_obj, time_for_fetching_external_links, xlsx_file, file_name)
+        if upload_location:
+            upload_report_to_filelistingblock(upload_location, xlsx_file, file_name)

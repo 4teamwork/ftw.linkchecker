@@ -4,12 +4,14 @@ from ftw.linkchecker.cell_format import BOLD
 from ftw.linkchecker.cell_format import CENTER
 from ftw.linkchecker.cell_format import DEFAULT_FONTNAME
 from ftw.linkchecker.cell_format import DEFAULT_FONTSIZE
+from ftw.linkchecker.command.checking_links import get_file_name
 from ftw.linkchecker.command import broken_link
 from ftw.linkchecker.command import checking_links
 from ftw.linkchecker.tests import ArchetypeFunctionalTestCase
 from ftw.linkchecker.tests import FunctionalTestCase
 from ftw.linkchecker.tests import MultiPageTestCase
 from ftw.linkchecker.tests.exemplar_data.exemplar_config import config_file
+from ftw.linkchecker.tests.helper_generating_excel import generate_test_data_excel_workbook
 from ftw.testing.mailing import Mailing
 from plone import api
 from zope.component.hooks import setSite
@@ -58,7 +60,7 @@ class TestArchetypeLink(ArchetypeFunctionalTestCase):
     def helper_check_links(self):
         setSite(self.portal)
         checking_links.setup_plone(self.app, self.plone_site_objs[0])
-        email_address, base_uri, timeout_config = checking_links.extract_config(
+        email_address, base_uri, timeout_config, upload_location = checking_links.extract_config(
             config_file)
         broken_relations_and_links_info = checking_links.get_total_fetching_time_and_broken_link_objs(
             int(timeout_config))
@@ -83,11 +85,9 @@ class TestFindingLinksAndRelations(MultiPageTestCase):
 
     def test_email_addresses_correspond_to_correct_plone_site(self):
         setSite(self.plone_site_objs[0])
-        email_address_0, base_uri0, timeout_config0 = checking_links.extract_config(
-            config_file)
+        email_address_0, base_uri0, timeout_config0, upload_location0 = checking_links.extract_config(config_file)
         setSite(self.plone_site_objs[1])
-        email_address_1, base_uri1, timeout_config1 = checking_links.extract_config(
-            config_file)
+        email_address_1, base_uri1, timeout_config1, upload_location1 = checking_links.extract_config(config_file)
 
         self.assertEqual(
             email_address_0,
@@ -111,7 +111,7 @@ class TestFindingLinksAndRelations(MultiPageTestCase):
 
     def helper_function_getting_getting_link_information(self):
         checking_links.setup_plone(self.app, self.plone_site_objs[0])
-        email_address, base_uri, timeout_config = checking_links.extract_config(
+        email_address, base_uri, timeout_config, upload_location = checking_links.extract_config(
             config_file)
         broken_relations_and_links_info = checking_links.get_total_fetching_time_and_broken_link_objs(
             int(timeout_config))
@@ -296,7 +296,7 @@ class TestShippingInformation(FunctionalTestCase):
         path_of_excel_workbook_exemplar = (
                 CURRENT_PATH +
                 '/exemplar_data/expected_excel_sheet_outcome.xlsx')
-        xlsx_file = self.generate_test_data_excel_workbook()
+        xlsx_file = generate_test_data_excel_workbook()
 
         # import the excel workbooks as pandas dataframes
         df1 = pd.read_excel(xlsx_file)
@@ -329,10 +329,11 @@ class TestShippingInformation(FunctionalTestCase):
         portal = self.layer['portal']
         setSite(portal)
 
+        file_name = get_file_name()
         report_mailer_instance = report_mailer.MailSender(portal)
         report_mailer_instance.send_feedback(
             email_subject, email_message, receiver_email_address,
-            exemplar_xlsx_file)
+            exemplar_xlsx_file, file_name)
         mail = Mailing(portal).pop()
         mail_obj = email.message_from_string(mail)
 
@@ -347,35 +348,3 @@ class TestShippingInformation(FunctionalTestCase):
 
         # tearDown
         Mailing(self.layer['portal']).tear_down()
-
-    @staticmethod
-    def generate_test_data_excel_workbook():
-        example_data = broken_link.BrokenLink()
-        example_data.is_internal = 'Some'
-        example_data.link_origin = 'example'
-        example_data.link_target = 'data'
-        example_data.status_code = 'to'
-        example_data.content_type = 'fill'
-        example_data.response_time = 'the'
-        example_data.error_message = 'sheet'
-        example_data.creator = 'slowly'
-        exemplar_report_data = [example_data] * 9
-
-        base_uri = 'http://www.example_uri.com'
-        file_i = report_generating.ReportCreator()
-        file_i.append_report_data(report_generating.LABELS,
-                                  base_uri,
-                                  BOLD &
-                                  CENTER &
-                                  DEFAULT_FONTNAME &
-                                  DEFAULT_FONTSIZE)
-        file_i.append_report_data(exemplar_report_data,
-                                  base_uri,
-                                  DEFAULT_FONTNAME &
-                                  DEFAULT_FONTSIZE)
-        file_i.add_general_autofilter()
-        file_i.cell_width_autofitter()
-        file_i.safe_workbook()
-        xlsx_file = file_i.get_workbook()
-
-        return xlsx_file
