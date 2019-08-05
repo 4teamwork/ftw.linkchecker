@@ -2,7 +2,7 @@ Changelog
 =========
 
 
-1.0.1 (unreleased)
+1.0.1 (2019-08-05)
 ------------------
 
 - Fix version conflict in test packages. [busykoala]
