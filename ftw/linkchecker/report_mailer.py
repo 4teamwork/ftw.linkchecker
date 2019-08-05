@@ -21,7 +21,7 @@ class MailSender(object):
         setSite(self.PLONE)
 
     def send_feedback(self, email_subject, email_message,
-                      receiver_email_address, xlsx_file, file_name):
+                      receiver_email_address, xlsx_file_content, file_name):
         """Send an email including an excel workbook attached.
         """
         mh = plone.api.portal.get_tool('MailHost')
@@ -40,7 +40,7 @@ class MailSender(object):
         msg.attach(MIMEText(email_message.encode(
             'windows-1252'), 'plain', 'windows-1252'))
         part = MIMEBase('application', "octet-stream")
-        part.set_payload(xlsx_file.read())
+        part.set_payload(xlsx_file_content)
         encoders.encode_base64(part)
         part.add_header(
             'Content-Disposition',
