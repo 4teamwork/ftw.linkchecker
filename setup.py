@@ -11,7 +11,10 @@ tests_require = [
     'ftw.testing',
     'plone.app.testing',
     'plone.testing',
-    'pandas==0.22.0',
+    # later versions of pandas require python-dateutil>=2.5.0
+    'pandas < 0.23.0',
+    # from numpy 1.17.0 only python >= 3.5 is supported
+    'numpy < 1.17.0',
     'xlrd >= 0.9.0',
     'requests',
     'xlsxwriter',

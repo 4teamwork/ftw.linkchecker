@@ -5,7 +5,7 @@ Changelog
 1.0.1 (unreleased)
 ------------------
 
-- Nothing changed yet.
+- Fix version conflict in test packages. [busykoala]
 
 
 1.0.0 (2019-08-02)
