@@ -8,6 +8,7 @@ from ftw.linkchecker import linkchecker
 from ftw.linkchecker import report_generating
 from ftw.linkchecker import report_mailer
 from ftw.linkchecker import setup_logger
+from ftw.linkchecker import LOGGER_NAME
 from ftw.linkchecker.cell_format import BOLD
 from ftw.linkchecker.cell_format import CENTER
 from ftw.linkchecker.cell_format import DEFAULT_FONTNAME
@@ -29,6 +30,7 @@ from zope.schema.interfaces import IURI
 import AccessControl
 import argparse
 import json
+import logging
 import os
 import plone
 import re
@@ -106,6 +108,9 @@ def get_total_fetching_time_and_broken_link_objs(timeout_config):
     for link_obj in link_objs:
         if link_obj.is_internal and link_obj.is_broken:
             internal_link_objs.append(link_obj)
+            logger = logging.getLogger(LOGGER_NAME)
+            logger.info('Found broken link object pointing to {}'.format(
+                link_obj.link_origin))
         elif not link_obj.is_internal:
             external_link_objs.append(link_obj)
 
@@ -329,7 +334,7 @@ def upload_report_to_filelistingblock(filelistingblock_url, xlsx_file, file_name
     try:
         file_listing_block = portal.unrestrictedTraverse(path=filelistingblock_url.encode('utf-8'))
     except Exception as e:
-        logger = setup_logger()
+        logger = logging.getLogger(LOGGER_NAME)
         logger.exception("Error while uploading report: upload location is not a valid path: {}".format(
             filelistingblock_url.encode('utf-8')))
     else:
@@ -378,7 +383,8 @@ def get_file_name():
 
 def main(app, *args):
     configurations = get_configs(args)
-    logger = setup_logger(configurations[1])
+    setup_logger(configurations[1])
+    logger = logging.getLogger(LOGGER_NAME)
     logger.info('Linkchecker instance started as expected.')
 
     plone_site_objs = list(_get_plone_sites(app))

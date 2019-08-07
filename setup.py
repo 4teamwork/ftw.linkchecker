@@ -1,4 +1,5 @@
 import os
+import sys
 
 from setuptools import find_packages
 from setuptools import setup
@@ -25,6 +26,21 @@ extras_require = {
     'tests': tests_require,
 }
 
+install_requires = [
+    'Plone',
+    'setuptools',
+    'ftw.upgrade',
+    'xlsxwriter',
+    'plone.api',
+    'plone.app.relationfield',
+    'plone.recipe.zope2instance',
+]
+# python versions smaller 3.2 need
+# logutils for QueueListener and QueueHandler
+if sys.version_info < (3, 2):
+    install_requires.extend([
+        'logutils'
+    ])
 
 setup(
     name='ftw.linkchecker',
@@ -55,16 +71,7 @@ setup(
     include_package_data=True,
     zip_safe=False,
 
-    install_requires=[
-        'Plone',
-        'setuptools',
-        'ftw.upgrade',
-        'xlsxwriter',
-        'plone.api',
-        'plone.app.relationfield',
-        'plone.recipe.zope2instance',
-    ],
-
+    install_requires=install_requires,
     tests_require=tests_require,
     extras_require=extras_require,
 
