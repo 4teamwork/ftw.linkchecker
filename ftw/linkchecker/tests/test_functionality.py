@@ -5,6 +5,7 @@ from ftw.linkchecker.cell_format import CENTER
 from ftw.linkchecker.cell_format import DEFAULT_FONTNAME
 from ftw.linkchecker.cell_format import DEFAULT_FONTSIZE
 from ftw.linkchecker.command.checking_links import get_file_name
+from ftw.linkchecker.command.checking_links import send_mail_with_excel_report_attached
 from ftw.linkchecker.command import broken_link
 from ftw.linkchecker.command import checking_links
 from ftw.linkchecker.tests import ArchetypeFunctionalTestCase
@@ -91,13 +92,13 @@ class TestFindingLinksAndRelations(MultiPageTestCase):
 
         self.assertEqual(
             email_address_0,
-            'hugo.boss@4teamwork.ch',
+            ['hugo.boss@4teamwork.ch', 'peter.wurst@4teamwork.ch'],
             'It is expected that the email address for page 0 is corresponding'
             'to its test site administrators email (hugo.boss@4teamwork.ch).')
 
         self.assertEqual(
             email_address_1,
-            'berta.huber@gmail.com',
+            ['berta.huber@gmail.com'],
             'It is expected that the email address for page 1 is corresponding'
             'to its test site administrators email (berta.huber@gmail.com).')
 
@@ -312,37 +313,50 @@ class TestShippingInformation(FunctionalTestCase):
     def test_if_mail_sender_sending_mail_incl_attachement(self):
         """Test if the mail sent by linkchecker can be received correctly.
         """
-
-        # test email variables
-        email_subject = 'Linkchecker Report'
-        email_message = 'Dear Site Administrator, \n\n\
-            Please check out the linkchecker report attached to this mail.\n\n\
-            Friendly regards,\n\
-            your 4teamwork linkcheck reporter'
-        receiver_email_address = 'hugo@boss.ch'
-        report_path = CURRENT_PATH + \
-                      '/exemplar_data/expected_excel_sheet_outcome.xlsx'
-        exemplar_xlsx_file = open(report_path, "rb")
-
         # setUp
         Mailing(self.layer['portal']).set_up()
         portal = self.layer['portal']
         setSite(portal)
 
-        file_name = get_file_name()
-        report_mailer_instance = report_mailer.MailSender(portal)
-        report_mailer_instance.send_feedback(
-            email_subject, email_message, receiver_email_address,
-            exemplar_xlsx_file, file_name)
-        mail = Mailing(portal).pop()
-        mail_obj = email.message_from_string(mail)
+        # set mail variables
+        email_addresses = ['hugo@boss.ch', 'hans.peter@giggu.org']
+        plone_site_obj = self.portal
+        total_time_fetching_external = 4000
+        # prepare attachment (xlsx_file to string)
+        report_location = 'exemplar_data/expected_excel_sheet_outcome.xlsx'
+        report_path = os.path.join(CURRENT_PATH, report_location)
+        with open(report_path, 'rb') as report:
+            report_string = report.read()
+        file_name = 'linkchecker_report.xlsx'
 
+        # send mail report to all addresses
+        send_mail_with_excel_report_attached(email_addresses, plone_site_obj,
+                                             total_time_fetching_external,
+                                             report_string, file_name)
+
+        # get the two mails sent before from queue
+        mail2 = Mailing(portal).pop()
+        mail1 = Mailing(portal).pop()
+        mail_obj1 = email.message_from_string(mail1)
+        mail_obj2 = email.message_from_string(mail2)
+
+        # make sure both mails are sent and have the correct address
         self.assertEqual(
-            mail_obj.get('To'), 'hugo@boss.ch',
+            mail_obj1.get('To'), 'hugo@boss.ch',
             'The email is expected to be sent to given reveiver.')
 
         self.assertEqual(
-            mail_obj.get_payload()[1].get_content_type(),
+            mail_obj2.get('To'), 'hans.peter@giggu.org',
+            'The email is expected to be sent to given reveiver.')
+
+        # make sure both emails send the attachment
+        self.assertEqual(
+            mail_obj1.get_payload()[1].get_content_type(),
+            'application/octet-stream',
+            'The emails attachement is expected to be a binary file.')
+
+        self.assertEqual(
+            mail_obj2.get_payload()[1].get_content_type(),
             'application/octet-stream',
             'The emails attachement is expected to be a binary file.')
 

@@ -34,7 +34,7 @@ Installation
 One needs to add a config file (e.g. linkchecker_config.json) holding:
 
 - portal path (unique identifier of the platform)
-- email of the platforms administrator (the one who gets the report)
+- emails of the platforms administrator (the ones who gets the report)
 - base URI (domain where the platform is configured)
 - timeout in seconds (how long the script waits for each external link before
   continuing if the page does not respond).
@@ -45,13 +45,13 @@ One needs to add a config file (e.g. linkchecker_config.json) holding:
 
     {
       "/portal/path-one": {
-        "email": "first_site_admin@example.com",
+        "email": ["first_site_admin@example.com", "first_site_keeper@example.com"],
         "base_uri": "http://example1.ch",
         "timeout_config": "1",
         "upload_location": "/content_page/my_file_listing_block"
       },
       "/portal/path-two": {
-        "email": "second_site_admin@example.com",
+        "email": ["second_site_admin@example.com"],
         "base_uri": "http://example2.ch",
         "timeout_config": "1"
       }

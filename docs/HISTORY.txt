@@ -5,7 +5,8 @@ Changelog
 1.0.2 (unreleased)
 ------------------
 
-- Nothing changed yet.
+- Allow multiple notified email addresses per site.
+  The string in the config file is a list of strings now. [busykoala]
 
 
 1.0.1 (2019-08-05)
