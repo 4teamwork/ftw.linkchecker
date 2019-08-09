@@ -1,0 +1,22 @@
+2019-08-09 11:40:26,289 - 98979 - INFO - Linkchecker instance started as expected.
+2019-08-09 11:40:26,292 - 98979 - INFO - Found site administrators email addresses for: hugo.boss@example.com
+2019-08-09 11:40:26,315 - 98979 - INFO - Found broken link object pointing to /Plone/front-page
+2019-08-09 11:40:26,334 - 98984 - INFO - Head request to http://plone.org/documentation/whatsnew
+2019-08-09 11:40:26,335 - 98985 - INFO - Head request to http://plone.org/documentation
+2019-08-09 11:40:26,335 - 98986 - INFO - Head request to http://plone.org/documentation/phc_topic_area?topic=Basic+Use
+2019-08-09 11:40:26,335 - 98987 - INFO - Head request to http://plone.org/documentation/faq/server-recommendations
+2019-08-09 11:40:26,336 - 98988 - INFO - Head request to http://www.hasecke.com/plone-white-paper
+2019-08-09 11:40:26,336 - 98989 - INFO - Head request to http://www.hasecke.com/plone-benutzerhandbuch/
+2019-08-09 11:40:26,337 - 98990 - INFO - Head request to http://www.plone-entwicklerhandbuch.de
+2019-08-09 11:40:26,337 - 98991 - INFO - Head request to http://plone.org/products
+2019-08-09 11:40:26,475 - 98991 - INFO - Head request to http://plone.org/support
+2019-08-09 11:40:26,476 - 98990 - INFO - Head request to https://mail.dzug.org/mailman/listinfo/zope
+2019-08-09 11:40:26,478 - 98986 - INFO - Head request to http://plone.org/products/by-category/themes
+2019-08-09 11:40:26,479 - 98989 - INFO - Head request to http://plone.net/providers
+2019-08-09 11:40:26,479 - 98988 - INFO - Head request to http://plone.net/sites
+2019-08-09 11:40:26,479 - 98987 - INFO - Head request to http://plone.net/case-studies
+2019-08-09 11:40:26,482 - 98985 - INFO - Head request to http://plone.org
+2019-08-09 11:40:26,530 - 98991 - INFO - Head request to http://zope2.zope.org
+2019-08-09 11:40:26,534 - 98985 - INFO - Head request to http://www.python.org
+2019-08-09 11:40:26,535 - 98986 - INFO - Head request to http://plone.org/foundation/foundation-donations
+2019-08-09 11:40:27,486 - 98979 - INFO - Finished going through all brains of "Website" and fetching for external Links. Total time fetching for external Links: 1152ms.

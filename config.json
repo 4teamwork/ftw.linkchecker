@@ -1,0 +1,7 @@
+{
+  "/Plone": {
+    "email": "hugo.boss@example.com",
+    "base_uri": "http://example1.ch",
+    "timeout_config": "1"
+  }
+}
