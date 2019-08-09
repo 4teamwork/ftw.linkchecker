@@ -392,6 +392,10 @@ def main(app, *args):
     logger.info('Linkchecker instance started as expected.')
 
     plone_site_objs = list(_get_plone_sites(app))
+    if not plone_site_objs:
+        logger.error('There were no pages found, please validate your pages paths.')
+        exit()
+
     config_file = configurations[0]
 
     logger.info(
