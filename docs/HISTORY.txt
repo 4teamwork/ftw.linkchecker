@@ -8,6 +8,7 @@ Changelog
 - Improve logging. [busykoala]
 - Check if report upload location exists, otherwise log
   and continue to next page. [busykoala]
+- Check if pages exist, otherwise exit linkchecker. [busykoala]
 
 
 1.1.0 (2019-08-08)
