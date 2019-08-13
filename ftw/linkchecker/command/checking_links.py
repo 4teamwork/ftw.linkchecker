@@ -402,6 +402,14 @@ def main(app, *args):
         setup_plone(app, plone_site_obj)
         email_addresses, base_uri, timeout_config, upload_location = extract_config(config_file)
 
+        # skip linkchecking if the upload location is wrong
+        portal = api.portal.get()
+        try:
+            portal.unrestrictedTraverse(path=upload_location.encode('utf-8'))
+        except KeyError as e:
+            logger.error('No valid upload location was found: {}'.format(e))
+            continue
+
         total_time_and_link_objs = get_total_fetching_time_and_broken_link_objs(
             int(timeout_config))
 
