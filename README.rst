@@ -6,8 +6,6 @@ ftw.linkchecker
 Introduction
 ============
 
-### INTRODUCTION ###
-
 It's important, that this package isn't started by conjob in non productive
 deployments. This is due to the fact, that the command is started by a zope
 ctl command.
