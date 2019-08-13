@@ -361,7 +361,8 @@ def get_configs(args):
     path_to_config_file = args.config
     path_to_log_file = args.log
 
-    if not os.path.isfile(path_to_config_file):
+    if not path_to_config_file or not os.path.exists(path_to_config_file):
+        logging.error('Broken config path: either the given path is none or it is invalid.')
         exit()
 
     with open(path_to_config_file) as f_:
