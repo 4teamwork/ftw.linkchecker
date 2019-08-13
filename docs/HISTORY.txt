@@ -5,7 +5,7 @@ Changelog
 1.1.1 (unreleased)
 ------------------
 
-- Nothing changed yet.
+- Improve logging. [busykoala]
 
 
 1.1.0 (2019-08-08)
