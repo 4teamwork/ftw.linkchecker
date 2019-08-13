@@ -5,7 +5,7 @@ Changelog
 1.1.2 (unreleased)
 ------------------
 
-- Nothing changed yet.
+- Remove duplicate "Introduction" header in readme [Nachtalb]
 
 
 1.1.1 (2019-08-13)
