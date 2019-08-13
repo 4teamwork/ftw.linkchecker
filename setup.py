@@ -4,7 +4,7 @@ import sys
 from setuptools import find_packages
 from setuptools import setup
 
-version = '1.1.1'
+version = '1.1.2.dev0'
 
 tests_require = [
     'ftw.builder',
