@@ -28,11 +28,22 @@ class BrokenLink(object):
         self.response_time = 'Unknown response time'
         self.error_message = 'No error occurred'
         self.creator = 'Unknown creator'
+        self.source_state = ''
 
     def __iter__(self):
         for attr in self.table_attrs:
             value = getattr(self, attr, '')
             yield value if isinstance(value, basestring) else ''
+
+    @staticmethod
+    def get_workflow_state(obj):
+        wftool = api.portal.get_tool('portal_workflow')
+        if len(wftool.getChainFor(obj)) <= 0:
+            # obj does not have a workflow
+            source_status = wftool.getChainFor(obj.aq_parent)
+        else:
+            source_status = wftool.getChainFor(obj)
+        return source_status
 
     def complete_information_with_internal_path(self, obj_having_path, path):
         # relation not broken if possible to traverse to
@@ -48,12 +59,14 @@ class BrokenLink(object):
             self.is_broken = True
             self.is_internal = True
             self.link_origin = '/'.join(obj_having_path.getPhysicalPath())
+            self.source_state = self.get_workflow_state(obj_having_path)
             self.link_target = path
             self.creator = obj_having_path.Creator()
 
     def complete_information_with_external_path(self, obj_having_path, url):
         self.is_internal = False
         self.link_origin = '/'.join(obj_having_path.getPhysicalPath())
+        self.source_state = self.get_workflow_state(obj_having_path)
         self.link_target = url
         self.creator = obj_having_path.Creator()
 
@@ -63,6 +76,7 @@ class BrokenLink(object):
             self.is_broken = True
             self.is_internal = True
             self.link_origin = '/'.join(obj_having_uid.getPhysicalPath())
+            self.source_state = self.get_workflow_state(obj_having_uid)
             self.link_target = uid
             self.creator = obj_having_uid.Creator()
         else:
@@ -76,5 +90,7 @@ class BrokenLink(object):
         self.is_internal = True
         self.link_origin = '/'.join(
             obj_having_broken_relation.getPhysicalPath())
+        self.source_state = self.get_workflow_state(
+            obj_having_broken_relation)
         self.link_target = 'Broken link in field: ' + str(field)
         self.creator = obj_having_broken_relation.Creator()

@@ -14,6 +14,7 @@ LABELS.content_type = 'Content Type'
 LABELS.response_time = 'Response Time'
 LABELS.error_message = 'Error Message'
 LABELS.creator = 'Creator'
+LABELS.source_state = 'Workflow State'
 LABELS = [LABELS]
 
 
@@ -66,6 +67,8 @@ class ReportCreator(object):
                                  safe_unicode(link_obj.error_message), format)
             self.worksheet.write(self.row, 7,
                                  safe_unicode(link_obj.creator), format)
+            self.worksheet.write(self.row, 8,
+                                 safe_unicode(link_obj.source_state), format)
 
             self.row += 1
         self.table.extend(link_objs)

@@ -1,6 +1,7 @@
 from ftw.builder import Builder
 from ftw.builder import create
 from ftw.testbrowser import browsing
+from plone import api
 from plone.app.textfield import RichTextValue
 from z3c.relationfield import RelationValue
 from zope.component.hooks import setSite
@@ -179,6 +180,14 @@ def set_up_test_environment(portal):
                             content['textblock_url1'],
                             content['textblock_within2'],
                             content['textblock_url2'], )
+
+    # This sets the workflow 'Sl Page Workflow' for all content being
+    # 'ftw.simplelayout.ContentPage'. I do that because in my tests
+    # sl content pages do not have a workflow otherwise and there
+    # would be no output to be tested.
+    wftool = api.portal.get_tool('portal_workflow')
+    wftool.setChainForPortalTypes(
+        ['ftw.simplelayout.ContentPage'], 'Sl Page Workflow')
 
 
 def make_content_for_me(content_type, within, title, int_url, ext_url, text,
