@@ -181,7 +181,10 @@ def set_up_test_environment(portal):
                             content['textblock_within2'],
                             content['textblock_url2'], )
 
-    # set workflow for pages
+    # This sets the workflow 'Sl Page Workflow' for all content being
+    # 'ftw.simplelayout.ContentPage'. I do that because in my tests
+    # sl content pages do not have a workflow otherwise and there
+    # would be no output to be tested.
     wftool = api.portal.get_tool('portal_workflow')
     wftool.setChainForPortalTypes(
         ['ftw.simplelayout.ContentPage'], 'Sl Page Workflow')
