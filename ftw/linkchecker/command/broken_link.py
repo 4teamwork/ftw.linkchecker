@@ -1,4 +1,3 @@
-from ftw.simplelayout.interfaces import ISimplelayoutBlock
 from plone import api
 from plone.api.portal import get_tool
 from plone.app.redirector.interfaces import IRedirectionStorage
@@ -29,7 +28,7 @@ class BrokenLink(object):
         self.response_time = 'Unknown response time'
         self.error_message = 'No error occurred'
         self.creator = 'Unknown creator'
-        self.source_state = 'Unknown status'
+        self.source_state = ''
 
     def __iter__(self):
         for attr in self.table_attrs:
@@ -39,7 +38,8 @@ class BrokenLink(object):
     @staticmethod
     def get_workflow_state(obj):
         wftool = api.portal.get_tool('portal_workflow')
-        if ISimplelayoutBlock.providedBy(obj):
+        if len(wftool.getChainFor(obj)) <= 0:
+            # obj does not have a workflow
             source_status = wftool.getChainFor(obj.aq_parent)
         else:
             source_status = wftool.getChainFor(obj)
