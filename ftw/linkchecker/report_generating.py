@@ -14,7 +14,7 @@ LABELS.content_type = 'Content Type'
 LABELS.response_time = 'Response Time'
 LABELS.error_message = 'Error Message'
 LABELS.creator = 'Creator'
-LABELS.source_state = 'Workflow State'
+LABELS.source_state = 'Review State'
 LABELS = [LABELS]
 
 
