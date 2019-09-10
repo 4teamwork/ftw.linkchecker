@@ -5,6 +5,7 @@ from plone import api
 from plone.app.textfield import RichTextValue
 from z3c.relationfield import RelationValue
 from zope.component.hooks import setSite
+from DateTime import DateTime
 
 
 def add_textarea_to_page(portal):
@@ -181,6 +182,10 @@ def set_up_test_environment(portal):
                             content['textblock_within2'],
                             content['textblock_url2'], )
 
+    assign_workflow_and_wf_state_to_sl_content_pages()
+
+
+def assign_workflow_and_wf_state_to_sl_content_pages():
     # This sets the workflow 'Sl Page Workflow' for all content being
     # 'ftw.simplelayout.ContentPage'. I do that because in my tests
     # sl content pages do not have a workflow otherwise and there
@@ -188,6 +193,18 @@ def set_up_test_environment(portal):
     wftool = api.portal.get_tool('portal_workflow')
     wftool.setChainForPortalTypes(
         ['ftw.simplelayout.ContentPage'], 'Sl Page Workflow')
+
+    # This sets the following workflow state for each
+    # object being a sl content page.
+    status = {'action': 'Review-State--ACTION--',
+              'review_state': 'Review-State--STATE--',
+              'actor': 'admin',
+              'comments': 'Review-State--COMMENTS--',
+              'time': DateTime()}
+    sl_content_page_brains = api.content.find(
+        portal_type='ftw.simplelayout.ContentPage')
+    for brain in sl_content_page_brains:
+        wftool.setStatusOf('Sl Page Workflow', brain.getObject(), status)
 
 
 def make_content_for_me(content_type, within, title, int_url, ext_url, text,
