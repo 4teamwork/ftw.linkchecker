@@ -2,7 +2,7 @@ Changelog
 =========
 
 
-1.1.2 (unreleased)
+1.2.0 (2019-09-10)
 ------------------
 
 - Add the links source objs workflow or its parents to report. [busykoala]
