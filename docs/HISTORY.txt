@@ -5,6 +5,7 @@ Changelog
 1.1.2 (unreleased)
 ------------------
 
+- Add the links source objs workflow or its parents to report. [busykoala]
 - Remove duplicate "Introduction" header in readme [Nachtalb]
 
 
