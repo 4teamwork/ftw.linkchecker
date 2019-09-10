@@ -2,7 +2,7 @@ Changelog
 =========
 
 
-1.2.1 (unreleased)
+1.3.0 (2019-09-10)
 ------------------
 
 - Replace workflow with review_state in the report. [busykoala]
