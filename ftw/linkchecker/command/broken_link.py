@@ -15,7 +15,8 @@ class BrokenLink(object):
         'content_type',
         'response_time',
         'error_message',
-        'creator'
+        'creator',
+        'source_state'
     ]
 
     def __init__(self):
