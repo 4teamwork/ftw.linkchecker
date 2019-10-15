@@ -5,7 +5,10 @@ from email.mime.base import MIMEBase
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.utils import formatdate
+from ftw.linkchecker import LOGGER_NAME
+from plone.dexterity.utils import safe_utf8
 from zope.component.hooks import setSite
+import logging
 import plone.api
 import time
 
@@ -51,3 +54,6 @@ class MailSender(object):
         mh.send(msg, mto=receiver_email_address,
                 mfrom=from_email,
                 immediate=True)
+        logger = logging.getLogger(LOGGER_NAME)
+        logger.info(safe_utf8(
+            u'Sent email to {}'.format(receiver_email_address)))

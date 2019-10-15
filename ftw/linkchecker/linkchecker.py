@@ -2,6 +2,7 @@ from ftw.linkchecker import LOGGER_NAME
 from ftw.linkchecker.pool_with_logging import PoolWithLogging
 from functools import partial
 from multiprocessing import cpu_count
+from plone.dexterity.utils import safe_utf8
 import logging
 import requests
 import time
@@ -13,8 +14,7 @@ def millis():
 
 def get_uri_response(external_link_obj, timeout):
     logger = logging.getLogger(LOGGER_NAME)
-    logger.info('Head request to {}'.format(
-        external_link_obj.link_target.encode('utf-8')))
+    logger.info(safe_utf8(u'Head request to {}'.format(external_link_obj.link_target)))
 
     headers = {
         'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 Safari/537.36'
