@@ -1,5 +1,5 @@
 from Products.CMFPlone.utils import safe_unicode
-from ftw.linkchecker.command import broken_link
+from ftw.linkchecker import broken_link
 from io import BytesIO
 from plone import api
 import re

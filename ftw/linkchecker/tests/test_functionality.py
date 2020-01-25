@@ -6,7 +6,7 @@ from ftw.linkchecker.cell_format import DEFAULT_FONTNAME
 from ftw.linkchecker.cell_format import DEFAULT_FONTSIZE
 from ftw.linkchecker.command.checking_links import get_file_name
 from ftw.linkchecker.command.checking_links import send_mail_with_excel_report_attached
-from ftw.linkchecker.command import broken_link
+from ftw.linkchecker import broken_link
 from ftw.linkchecker.command import checking_links
 from ftw.linkchecker.tests import ArchetypeFunctionalTestCase
 from ftw.linkchecker.tests import FunctionalTestCase
