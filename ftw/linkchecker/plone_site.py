@@ -1,8 +1,6 @@
 from AccessControl.SecurityManagement import newSecurityManager
 from Acquisition import aq_parent
-from Testing.makerequest import makerequest
 from ftw.linkchecker import LOGGER_NAME
-from plone import api
 from zope.component.hooks import setSite
 from zope.globalrequest import setRequest
 import AccessControl

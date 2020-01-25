@@ -1,10 +1,10 @@
 from Products.CMFDiffTool.utils import safe_utf8
-from ftw.linkchecker import broken_link
 from ftw.linkchecker.cell_format import BOLD
 from ftw.linkchecker.cell_format import CENTER
 from ftw.linkchecker.cell_format import DEFAULT_FONTNAME
 from ftw.linkchecker.cell_format import DEFAULT_FONTSIZE
 from ftw.linkchecker.configuration import Configuration
+from ftw.linkchecker.link import Link
 from ftw.linkchecker.report_generating import LABELS
 from ftw.linkchecker.report_generating import ReportCreator
 import os
@@ -15,7 +15,7 @@ CURRENT_PATH = os.path.dirname(os.path.abspath(__file__))
 
 
 def generate_test_data_excel_workbook():
-    example_data = broken_link.BrokenLink()
+    example_data = Link()
     example_data.is_internal = 'Some'
     example_data.link_origin = 'example'
     example_data.link_target = 'data'
