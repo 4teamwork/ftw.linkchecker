@@ -1,4 +1,5 @@
 from AccessControl.SecurityManagement import newSecurityManager
+from Acquisition import aq_parent
 from Testing.makerequest import makerequest
 from ftw.linkchecker import LOGGER_NAME
 from plone import api
@@ -10,22 +11,19 @@ import logging
 
 class PloneSite():
 
-    def __init__(self, app, plone_site, configuration):
+    def __init__(self, plone_site, configuration):
         self.configuration = configuration
         self.upload_path = ''
         self.logger = logging.getLogger(LOGGER_NAME)
 
-        self._setup_plone(app, plone_site)
-        self.obj = api.portal.get()
+        self._setup_plone(plone_site)
+        self.obj = plone_site
         self.configuration = self._get_config_for_portal()
         if self.configuration:
             self._set_upload_path()
 
-    def _setup_plone(self, app, plone_site_obj):
-        app = makerequest(app)
-        setRequest(app.REQUEST)
-        plone_site_obj = app.unrestrictedTraverse(
-            '/'.join(plone_site_obj.getPhysicalPath()))
+    def _setup_plone(self, plone_site_obj):
+        setRequest(aq_parent(plone_site_obj).REQUEST)
         user = AccessControl.SecurityManagement.SpecialUsers.system
         user = user.__of__(plone_site_obj.acl_users)
         newSecurityManager(plone_site_obj, user)

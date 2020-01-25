@@ -3,8 +3,8 @@ from Products.Archetypes.Field import ReferenceField
 from Products.Archetypes.Field import StringField
 from Products.Archetypes.Field import TextField
 from ftw.linkchecker import LOGGER_NAME
-from ftw.linkchecker import linkchecker
 from ftw.linkchecker.broken_link import BrokenLink
+from ftw.linkchecker.linkchecker import StatusChecker
 from plone import api
 from plone.app.textfield.interfaces import IRichText
 from plone.dexterity.interfaces import IDexterityFTI
@@ -35,10 +35,12 @@ class Accumulator(object):
         self._all_links = self._get_all_links()
         self._separate_links_to_internal_external()
 
-        self.time_external_routine = linkchecker.work_through_urls(
+        status_checker = StatusChecker(
             self._external_link_objs, self._site.configuration.timeout_config)
-        self.external_broken_link_objs = filter(
-            lambda link_obj: link_obj.is_broken, self._external_link_objs)
+        status_checker.work_through_urls()
+
+        self.external_broken_link_objs = status_checker.broken_external_links
+        self.time_external_routine = status_checker.total_time
 
     def _get_all_links(self):
         portal_catalog = api.portal.get_tool('portal_catalog')

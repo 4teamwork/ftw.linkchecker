@@ -47,5 +47,5 @@ class PloneSiteConfiguration(object):
         self.site_name = safe_utf8(site_name)
         self.email = [safe_utf8(email) for email in site_info.get('email', [])]
         self.base_uri = safe_utf8(site_info.get('base_uri', ''))
-        self.timeout_config = site_info.get('timeout_config', 1)
+        self.timeout_config = int(site_info.get('timeout_config', 1))
         self.upload_location = safe_utf8(site_info.get('upload_location', ''))

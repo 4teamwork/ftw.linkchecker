@@ -1,9 +1,17 @@
-from ftw.linkchecker import report_generating
+from Products.CMFDiffTool.utils import safe_utf8
+from ftw.linkchecker import broken_link
 from ftw.linkchecker.cell_format import BOLD
 from ftw.linkchecker.cell_format import CENTER
 from ftw.linkchecker.cell_format import DEFAULT_FONTNAME
 from ftw.linkchecker.cell_format import DEFAULT_FONTSIZE
-from ftw.linkchecker import broken_link
+from ftw.linkchecker.configuration import Configuration
+from ftw.linkchecker.report_generating import LABELS
+from ftw.linkchecker.report_generating import ReportCreator
+import os
+import tempfile
+
+
+CURRENT_PATH = os.path.dirname(os.path.abspath(__file__))
 
 
 def generate_test_data_excel_workbook():
@@ -20,8 +28,8 @@ def generate_test_data_excel_workbook():
     exemplar_report_data = [example_data] * 9
 
     base_uri = 'http://www.example_uri.com'
-    file_i = report_generating.ReportCreator()
-    file_i.append_report_data(report_generating.LABELS,
+    file_i = ReportCreator()
+    file_i.append_report_data(LABELS,
                               base_uri,
                               BOLD &
                               CENTER &
@@ -37,3 +45,17 @@ def generate_test_data_excel_workbook():
     xlsx_file = file_i.get_workbook()
 
     return xlsx_file
+
+
+class ConfigurationMock(Configuration):
+    def _parse_arguments(self, args):
+        config_path = os.path.join(
+            CURRENT_PATH,
+            'exemplar_data/exemplar_config.json')
+
+        log_dir = tempfile.mkdtemp()
+        log_path = os.path.join(log_dir, 'linkchecker.log')
+        open(log_path, 'a').close()
+
+        self.config_file_path = safe_utf8(config_path)
+        self.log_file_path = safe_utf8(log_path)

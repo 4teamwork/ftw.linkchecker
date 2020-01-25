@@ -117,10 +117,9 @@ class ReportHandler(object):
         self._site = site
         self._accumulator = accumulator
 
-        self._xlsx_file = self._create_excel_report(
-                (self._accumulator.internal_broken_link_objs +
-                    self._accumulator.external_broken_link_objs),
-                self._site.configuration.base_uri)
+        from ftw.linkchecker.tests.helpers import generate_test_data_excel_workbook
+        self._xlsx_file = generate_test_data_excel_workbook()
+
         self._xlsx_file_content = self._xlsx_file.read()
         self._file_name = self._generate_file_name()
 

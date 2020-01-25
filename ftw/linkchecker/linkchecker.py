@@ -8,22 +8,54 @@ import requests
 import time
 
 
-def millis():
+class StatusChecker(object):
+
+    def __init__(self, external_link_objs, timeout_config):
+        self.total_time = 0
+        self.broken_external_links = []
+
+        self._external_link_objs = external_link_objs
+        self._timeout_config = timeout_config
+
+    def work_through_urls(self):
+        # prepare worker function and pool
+        part_get_uri_response = partial(_get_uri_response, timeout=self._timeout_config)
+        pool = PoolWithLogging(processes=cpu_count(), logger_name=LOGGER_NAME)
+
+        start_time = _millis()
+        self._external_link_objs = pool.map(
+            part_get_uri_response, self._external_link_objs)
+        pool.close()
+        self.total_time = _millis() - start_time
+
+        self._filter_broken_links()
+
+    def _filter_broken_links(self):
+        self.broken_external_links = filter(
+            lambda link_obj: link_obj.is_broken, self._external_link_objs)
+
+
+def _millis():
     return int(round(time.time() * 1000))
 
 
-def get_uri_response(external_link_obj, timeout):
+def _get_uri_response(external_link_obj, timeout):
+    """This is the multiprocessing worker function. It has to be top level in
+    order to be pickable.
+    """
+
     logger = logging.getLogger(LOGGER_NAME)
-    logger.info(safe_utf8(u'Head request to {}'.format(external_link_obj.link_target)))
+    logger.info(safe_utf8(
+        u'Head request to {}'.format(external_link_obj.link_target)))
 
     headers = {
         'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 Safari/537.36'
     }
     error = None
     response = None
-    start_time = millis()
+    start_time = _millis()
     try:
-        response = requests.head(external_link_obj.link_target.encode('utf-8'),
+        response = requests.head(safe_utf8(external_link_obj.link_target),
                                  timeout=timeout,
                                  headers=headers,
                                  allow_redirects=False,
@@ -37,7 +69,7 @@ def get_uri_response(external_link_obj, timeout):
     except Exception as e:
         error = e.message
 
-    time = millis() - start_time
+    time = _millis() - start_time
 
     if response and response.status_code == 200 \
             or 'resolveuid' in external_link_obj.link_target:
@@ -49,15 +81,4 @@ def get_uri_response(external_link_obj, timeout):
         external_link_obj.response_time = time
         external_link_obj.error_message = error
 
-
-def work_through_urls(external_link_objs, timeout_config):
-    # prepare worker function and pool
-    part_get_uri_response = partial(get_uri_response, timeout=timeout_config)
-    pool = PoolWithLogging(processes=cpu_count(), logger_name=LOGGER_NAME)
-
-    start_time = millis()
-    external_link_objs = pool.map(part_get_uri_response, external_link_objs)
-    pool.close()
-    total_time = millis() - start_time
-
-    return total_time
+    return external_link_obj

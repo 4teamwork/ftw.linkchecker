@@ -1,4 +1,4 @@
-config_file = {
+{
     "/plone": {
         "email": ["hugo.boss@4teamwork.ch", "peter.wurst@4teamwork.ch"],
         "base_uri": "http://example1.ch",
