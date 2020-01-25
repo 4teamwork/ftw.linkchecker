@@ -6,7 +6,7 @@ from urlparse import urlparse
 from zope.component import getUtility
 
 
-class BrokenLink(object):
+class Link(object):
     table_attrs = [
         'is_internal',
         'link_origin',

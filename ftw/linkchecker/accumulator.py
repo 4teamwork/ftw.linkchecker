@@ -3,8 +3,8 @@ from Products.Archetypes.Field import ReferenceField
 from Products.Archetypes.Field import StringField
 from Products.Archetypes.Field import TextField
 from ftw.linkchecker import LOGGER_NAME
-from ftw.linkchecker.broken_link import BrokenLink
-from ftw.linkchecker.linkchecker import StatusChecker
+from ftw.linkchecker.link import Link
+from ftw.linkchecker.status_checker import StatusChecker
 from plone import api
 from plone.app.textfield.interfaces import IRichText
 from plone.dexterity.interfaces import IDexterityFTI
@@ -105,13 +105,13 @@ class Accumulator(object):
 
                 if IRelation.providedBy(field):
                     if fieldvalue.isBroken():
-                        link = BrokenLink()
+                        link = Link()
                         link.complete_information_for_broken_relation_with_broken_relation_obj(
                             obj, field)
                         link_objs.append(link)
 
                 elif IURI.providedBy(field):
-                    link = BrokenLink()
+                    link = Link()
                     link.complete_information_with_external_path(obj,
                                                                  fieldvalue)
                     link_objs.append(link)
@@ -242,16 +242,16 @@ class Accumulator(object):
         paths = links_and_relations_from_rich_text[2]
 
         for ext_link in links:
-            link = BrokenLink()
+            link = Link()
             link.complete_information_with_external_path(obj, ext_link)
             link_and_relation_information.append(link)
 
         for uid in uids:
-            link = BrokenLink()
+            link = Link()
             link.complete_information_with_internal_uid(obj, uid)
             link_and_relation_information.append(link)
 
         for path in paths:
-            link = BrokenLink()
+            link = Link()
             link.complete_information_with_internal_path(obj, path)
             link_and_relation_information.append(link)

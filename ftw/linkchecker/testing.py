@@ -1,9 +1,8 @@
-from plone.testing.z2 import ZSERVER_FIXTURE
 from ftw.builder.testing import BUILDER_LAYER
 from ftw.builder.testing import functional_session_factory
 from ftw.builder.testing import set_builder_session_factory
-from plone.app.testing import FunctionalTesting
 from ftw.linkchecker.tests import builders
+from plone.app.testing import FunctionalTesting
 from plone.app.testing import PLONE_SITE_ID
 from plone.app.testing import PloneSandboxLayer
 from plone.app.testing import applyProfile
@@ -13,6 +12,7 @@ from plone.app.testing.layers import PloneFixture
 from plone.testing import z2
 from plone.testing import zca, security
 from plone.testing import zodb
+from plone.testing.z2 import ZSERVER_FIXTURE
 from zope.configuration import xmlconfig
 import contextlib
 from plone.app.testing.interfaces import (
@@ -33,6 +33,7 @@ ADDITIONAL_PAGES_TO_SETUP = [
 
 
 class PloneFixtureChild(PloneFixture):
+
     def __init__(self):
         super(PloneFixture, self).__init__()
 
@@ -75,6 +76,7 @@ PLONE_FIXTURE = PloneFixtureChild()
 
 
 class LinkcheckerLayer(PloneSandboxLayer):
+
     defaultBases = (PLONE_FIXTURE, BUILDER_LAYER, ZSERVER_FIXTURE)
 
     def setUpZope(self, app, configurationContext):

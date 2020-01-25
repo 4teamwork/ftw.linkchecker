@@ -1,11 +1,11 @@
 from Products.CMFPlone.utils import safe_unicode
 from ftw.linkchecker import LOGGER_NAME
-from ftw.linkchecker import broken_link
 from ftw.linkchecker import report_mailer
 from ftw.linkchecker.cell_format import BOLD
 from ftw.linkchecker.cell_format import CENTER
 from ftw.linkchecker.cell_format import DEFAULT_FONTNAME
 from ftw.linkchecker.cell_format import DEFAULT_FONTSIZE
+from ftw.linkchecker.link import Link
 from io import BytesIO
 from plone import api
 import logging
@@ -16,7 +16,7 @@ import transaction
 import xlsxwriter
 
 
-LABELS = broken_link.BrokenLink()
+LABELS = Link()
 LABELS.is_internal = 'Internal/External'
 LABELS.link_origin = 'Origin'
 LABELS.link_target = 'Destination'
@@ -117,9 +117,10 @@ class ReportHandler(object):
         self._site = site
         self._accumulator = accumulator
 
-        from ftw.linkchecker.tests.helpers import generate_test_data_excel_workbook
-        self._xlsx_file = generate_test_data_excel_workbook()
-
+        self._xlsx_file = self._create_excel_report(
+                (self._accumulator.internal_broken_link_objs +
+                    self._accumulator.external_broken_link_objs),
+                self._site.configuration.base_uri)
         self._xlsx_file_content = self._xlsx_file.read()
         self._file_name = self._generate_file_name()
 

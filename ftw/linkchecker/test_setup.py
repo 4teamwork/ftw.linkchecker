@@ -1,10 +1,10 @@
+from DateTime import DateTime
 from ftw.builder import Builder
 from ftw.builder import create
 from plone import api
 from plone.app.textfield import RichTextValue
 from z3c.relationfield import RelationValue
 from zope.component.hooks import setSite
-from DateTime import DateTime
 
 
 def add_textarea_to_page(portal):
