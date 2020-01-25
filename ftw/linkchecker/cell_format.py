@@ -12,11 +12,11 @@ class CellFormat(object):
         return workbook.add_format(self.format)
 
 
-BOLD = CellFormat({'bold': True})
-DATE_FORMAT = CellFormat({'num_format': 'mmmm d yyyy'})
-ITALIC = CellFormat({'italic': True})
-RED = CellFormat({'color': 'red'})
 BLUE = CellFormat({'color': 'blue'})
+BOLD = CellFormat({'bold': True})
 CENTER = CellFormat({'align': 'center'})
+DATE_FORMAT = CellFormat({'num_format': 'mmmm d yyyy'})
 DEFAULT_FONTNAME = CellFormat({'font_name': 'Courier New'})
 DEFAULT_FONTSIZE = CellFormat({'font_size': 10})
+ITALIC = CellFormat({'italic': True})
+RED = CellFormat({'color': 'red'})

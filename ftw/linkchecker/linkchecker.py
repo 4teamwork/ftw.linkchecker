@@ -49,8 +49,6 @@ def get_uri_response(external_link_obj, timeout):
         external_link_obj.response_time = time
         external_link_obj.error_message = error
 
-    return external_link_obj
-
 
 def work_through_urls(external_link_objs, timeout_config):
     # prepare worker function and pool
@@ -62,4 +60,4 @@ def work_through_urls(external_link_objs, timeout_config):
     pool.close()
     total_time = millis() - start_time
 
-    return external_link_objs, total_time
+    return total_time

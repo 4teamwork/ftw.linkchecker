@@ -1,6 +1,5 @@
 from ftw.builder import Builder
 from ftw.builder import create
-from ftw.testbrowser import browsing
 from plone import api
 from plone.app.textfield import RichTextValue
 from z3c.relationfield import RelationValue
