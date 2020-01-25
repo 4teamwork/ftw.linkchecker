@@ -3,7 +3,7 @@ from ftw.linkchecker.cell_format import BOLD
 from ftw.linkchecker.cell_format import CENTER
 from ftw.linkchecker.cell_format import DEFAULT_FONTNAME
 from ftw.linkchecker.cell_format import DEFAULT_FONTSIZE
-from ftw.linkchecker.command import broken_link
+from ftw.linkchecker import broken_link
 
 
 def generate_test_data_excel_workbook():
