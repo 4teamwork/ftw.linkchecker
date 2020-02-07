@@ -9,7 +9,7 @@ Introduction
 ``ftw.linkchecker`` is an add-on for Plone installations. It is meant to be run
 as a cronjob regularly to find broken links and references within Plone sites.
 
-How does it work
+How it works
 ****************
 
 - The config file is inspected and the information extracted.
