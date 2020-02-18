@@ -67,12 +67,12 @@ class Accumulator(object):
 
         if not queryUtility(IDexterityFTI, name=obj.portal_type):
             # is not dexterity
+            plausible_fields = (
+                TextField,
+                ReferenceField,
+                ComputedField,
+                StringField)
             for field in obj.Schema().fields():
-                plausible_fields = (
-                    TextField,
-                    ReferenceField,
-                    ComputedField,
-                    StringField)
                 if not isinstance(field, plausible_fields):
                     continue
                 content = field.getRaw(obj)
