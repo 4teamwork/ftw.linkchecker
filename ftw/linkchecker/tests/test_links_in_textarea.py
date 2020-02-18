@@ -8,7 +8,7 @@ class TestLinksInTextArea(FunctionalTestCase):
         obj = self.textarea
         url = 'foo'
         accumulator = Accumulator(self.portal)
-        res_path = accumulator._create_path_even_there_are_parent_pointers(
+        res_path = accumulator._create_path_even_if_there_are_parent_pointers(
             obj, url)
 
         self.assertEqual(
@@ -21,7 +21,7 @@ class TestLinksInTextArea(FunctionalTestCase):
         obj = self.textarea
         url = './foo'
         accumulator = Accumulator(self.portal)
-        res_path = accumulator._create_path_even_there_are_parent_pointers(
+        res_path = accumulator._create_path_even_if_there_are_parent_pointers(
             obj, url)
 
         self.assertEqual(
@@ -34,7 +34,7 @@ class TestLinksInTextArea(FunctionalTestCase):
         obj = self.textarea
         url = '/foo'
         accumulator = Accumulator(self.portal)
-        res_path = accumulator._create_path_even_there_are_parent_pointers(
+        res_path = accumulator._create_path_even_if_there_are_parent_pointers(
             obj, url)
 
         self.assertEqual(
@@ -47,7 +47,7 @@ class TestLinksInTextArea(FunctionalTestCase):
         obj = self.textarea
         url = '../../../../foo'
         accumulator = Accumulator(self.portal)
-        res_path = accumulator._create_path_even_there_are_parent_pointers(
+        res_path = accumulator._create_path_even_if_there_are_parent_pointers(
             obj, url)
 
         self.assertEqual(
