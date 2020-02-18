@@ -6,26 +6,26 @@ ftw.linkchecker
 Introduction
 ============
 
-``ftw.linkchecker`` is an add-on for Plone installations. It is meant to be run
-as a cronjob regularly to find broken links and references within Plone sites.
+``ftw.linkchecker`` is an add-on for Plone installations. It is designed to be run
+as a cronjob regularly to find and report broken links and references within Plone sites.
 
 How it works
 ****************
 
-- The config file is inspected and the information extracted.
-- Each Plone site is dealt with separately with its info extracted.
-- All fields possibly containing links are analysed and link/relation like
-  strings are collected and stored as link objects with some additional info.
-- A check is done for each link/relation whether they are broken.
-- A report is generated in an Excel sheet.
-- The report is sent to the email addresses configured.
-- If a valid upload location is provided, the file is stored there additionally.
+- The config file is inspected and the information per site configuration extracted.
+- For each Plone site (whether configured or not) in the zope instance:
+    - All fields possibly containing links are analysed and link/relation like
+      strings are collected and stored as link objects with some additional info.
+    - A check is done for each link/relation whether they are broken.
+    - A report is generated in an Excel sheet.
+    - The report is sent to the email addresses configured.
+    - If a valid upload location is provided, the file is stored there additionally.
 
 Important note
 **************
 
-It's important, that this package isn't started by conjob in non productive
-deployments. This is due to the fact, that the command is started by a zope
+It's important that this package isn't started by cronjob in non-productive
+deployments. This is because the command is started by a zope
 ctl command.
 
 
@@ -51,16 +51,32 @@ Installation
 Configuration
 =============
 
-A config file is required (there is an example in ``config.example``).
-In the config file following things can be configured:
+A JSON configuration file is required (see below for an example).
+The following options can be configured in the config file per platform:
 
-- portal path (unique identifier of the platform)
 - emails of the platforms administrator (the ones who gets the report)
 - base URI (domain where the platform is configured - it will be used to prepend in the report)
 - timeout in seconds (how long the script waits for each external link before
   continuing if the page does not respond).
 - upload_location can be left empty. It is the path to a ``ftw.simplelayout`` file listing
   block where the report will additionally be uploaded.
+
+
+::
+
+    {
+      "/plone1": {
+        "email": ["first_site_admin@example.com", "first_site_keeper@example.com"],
+        "base_uri": "http://example1.ch",
+        "timeout_config": "1",
+        "upload_location": "/content_page/my_file_listing_block"
+      },
+      "/folder/plone2": {
+        "email": ["second_site_admin@example.com"],
+        "base_uri": "http://example2.ch",
+        "timeout_config": "1"
+      }
+    }
 
 
 Usage
