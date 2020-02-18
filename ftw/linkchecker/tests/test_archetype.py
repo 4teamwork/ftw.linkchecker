@@ -1,5 +1,5 @@
 from ftw.linkchecker.accumulator import Accumulator
-from ftw.linkchecker.plone_site import PloneSite
+from ftw.linkchecker.per_site_configuration import PerSiteConfiguration
 from ftw.linkchecker.tests import ArchetypeFunctionalTestCase
 from ftw.linkchecker.tests.helpers import ConfigurationMock
 from zope.component.hooks import setSite
@@ -49,7 +49,7 @@ class TestArchetypeLink(ArchetypeFunctionalTestCase):
 
         configuration = ConfigurationMock(
             'In real I would be *args comming from argparser.')
-        site = PloneSite(self.plone_site_objs[0], configuration)
+        site = PerSiteConfiguration(self.plone_site_objs[0], configuration)
         accumulator = Accumulator(site)
         accumulator.discover_broken_links()
         self.paths_from = [link_obj.link_origin for link_obj in

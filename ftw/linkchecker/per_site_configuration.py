@@ -7,7 +7,7 @@ import AccessControl
 import logging
 
 
-class PloneSite():
+class PerSiteConfiguration():
 
     def __init__(self, plone_site, configuration):
         self.configuration = configuration

@@ -2,7 +2,7 @@ from ftw.linkchecker import LOGGER_NAME
 from ftw.linkchecker import setup_logger
 from ftw.linkchecker.accumulator import Accumulator
 from ftw.linkchecker.configuration import Configuration
-from ftw.linkchecker.plone_site import PloneSite
+from ftw.linkchecker.per_site_configuration import PerSiteConfiguration
 from ftw.linkchecker.report_generating import ReportHandler
 import logging
 
@@ -32,8 +32,8 @@ def check_links(app, args):
         exit()
 
     for plone_site in plone_sites:
-        # Init a PloneSite object handling the context
-        site = PloneSite(plone_site, configuration)
+        # Init a PerSiteConfiguration object handling the context
+        site = PerSiteConfiguration(plone_site, configuration)
 
         # Accumulate broken links in PloneSite
         accumulator = Accumulator(site)
