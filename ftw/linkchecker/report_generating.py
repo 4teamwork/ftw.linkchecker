@@ -118,9 +118,9 @@ class ReportHandler(object):
         self._accumulator = accumulator
 
         self._xlsx_file = self._create_excel_report(
-                (self._accumulator.internal_broken_link_objs +
-                    self._accumulator.external_broken_link_objs),
-                self._site.configuration.base_uri)
+            (self._accumulator.internal_broken_link_objs +
+                self._accumulator.external_broken_link_objs),
+            self._site.configuration.base_uri)
         self._xlsx_file_content = self._xlsx_file.read()
         self._file_name = self._generate_file_name()
 
@@ -144,11 +144,6 @@ class ReportHandler(object):
             time.strftime('%Y_%b_%d_%H%M%S', time.gmtime()))
 
     def _create_excel_report(self, link_objs, base_uri):
-        xlsx_file = self._create_excel_report_and_return_filepath(
-            link_objs, base_uri)
-        return xlsx_file
-
-    def _create_excel_report_and_return_filepath(self, link_objs, base_uri):
         file_i = ReportCreator()
         file_i.append_report_data(LABELS,
                                   base_uri,
