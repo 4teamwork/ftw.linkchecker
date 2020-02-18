@@ -96,7 +96,7 @@ class Accumulator(object):
                     content = 'href="%s"' % content
                 self._extract_and_append_link_objs(content, obj, link_objs)
 
-        if queryUtility(IDexterityFTI, name=obj.portal_type):
+        else:
             for name, field, schemata in self._iter_fields(obj.portal_type):
                 storage = schemata(obj)
                 fieldvalue = getattr(storage, name)
@@ -134,7 +134,7 @@ class Accumulator(object):
                 break
         return index + 1
 
-    def _create_path_even_there_are_parent_pointers(self, obj, url):
+    def _create_path_even_if_there_are_parent_pointers(self, obj, url):
         portal_path_segments = api.portal.get().getPhysicalPath()
         current_path_segments = obj.aq_parent.getPhysicalPath()
         destination_path_segments = filter(len, url.split('/'))
@@ -210,7 +210,7 @@ class Accumulator(object):
             elif url.startswith('resolveuid/'):
                 continue
             elif not urlparse(url).scheme:
-                path = self._create_path_even_there_are_parent_pointers(
+                path = self._create_path_even_if_there_are_parent_pointers(
                     obj, url)
                 output_paths.append(path)
             else:
