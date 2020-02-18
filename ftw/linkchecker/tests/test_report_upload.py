@@ -1,7 +1,7 @@
 from ftw.builder import Builder
 from ftw.builder import create
 from ftw.linkchecker.accumulator import Accumulator
-from ftw.linkchecker.plone_site import PloneSite
+from ftw.linkchecker.per_site_configuration import PerSiteConfiguration
 from ftw.linkchecker.report_generating import ReportHandler
 from ftw.linkchecker.tests import MultiPageTestCase
 from ftw.linkchecker.tests.helpers import ConfigurationMock
@@ -25,7 +25,7 @@ class TestReportUploading(MultiPageTestCase):
         # Run linchecker features needed for getting a report
         configuration = ConfigurationMock(
                 'In real I would be *args comming from argparser.')
-        site = PloneSite(self.plone_site_objs[0], configuration)
+        site = PerSiteConfiguration(self.plone_site_objs[0], configuration)
         accumulator = Accumulator(site)
         accumulator.discover_broken_links()
         report_handler = ReportHandler(site, accumulator)

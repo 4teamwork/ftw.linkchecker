@@ -1,5 +1,5 @@
 from ftw.linkchecker.accumulator import Accumulator
-from ftw.linkchecker.plone_site import PloneSite
+from ftw.linkchecker.per_site_configuration import PerSiteConfiguration
 from ftw.linkchecker.report_generating import ReportHandler
 from ftw.linkchecker.tests import FunctionalTestCase
 from ftw.linkchecker.tests.helpers import ConfigurationMock
@@ -48,7 +48,7 @@ class TestShippingInformation(FunctionalTestCase):
         # Get configuration, collect links and send report
         configuration = ConfigurationMock(
                 'In real I would be *args comming from argparser.')
-        site = PloneSite(portal, configuration)
+        site = PerSiteConfiguration(portal, configuration)
         accumulator = Accumulator(site)
         accumulator.discover_broken_links()
         self.paths_from = [link_obj.link_origin for link_obj in
