@@ -24,7 +24,7 @@ How it works
 Important note
 **************
 
-It's important that this package isn't started by cronjob in non-productive
+It's important that this package isn't started by cronjob in non-production
 deployments. This is because the command is started by a zope
 ctl command.
 
@@ -55,7 +55,7 @@ A JSON configuration file is required (see below for an example).
 The following options can be configured in the config file per platform:
 
 - emails of the platforms administrator (the ones who gets the report)
-- base URI (domain where the platform is configured - it will be used to prepend in the report)
+- base URI (domain where the platform is configured - it will be prepended to the report)
 - timeout in seconds (how long the script waits for each external link before
   continuing if the page does not respond).
 - upload_location can be left empty. It is the path to a ``ftw.simplelayout`` file listing
