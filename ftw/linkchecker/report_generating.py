@@ -188,7 +188,7 @@ class ReportHandler(object):
         try:
             file_listing_block = portal.unrestrictedTraverse(
                 path=filelistingblock_url.encode('utf-8'))
-        except Exception:
+        except KeyError:
             logger = logging.getLogger(LOGGER_NAME)
             logger.exception(
                 'Error while uploading report: upload location is not a valid path: {}'.format(
