@@ -22,12 +22,12 @@ import re
 
 class Accumulator(object):
 
-    def __init__(self, site):
+    def __init__(self, site_config):
         self.time_external_routine = 0
         self.internal_broken_link_objs = []
         self.external_broken_link_objs = []
 
-        self._site = site
+        self._site_config = site_config
         self._logger = logging.getLogger(LOGGER_NAME)
         self._external_link_objs = []
 
@@ -36,7 +36,7 @@ class Accumulator(object):
         self._separate_links_to_internal_external()
 
         status_checker = StatusChecker(
-            self._external_link_objs, self._site.configuration.timeout_config)
+            self._external_link_objs, self._site_config.configuration.timeout_config)
         status_checker.work_through_urls()
 
         self.external_broken_link_objs = status_checker.broken_external_links
