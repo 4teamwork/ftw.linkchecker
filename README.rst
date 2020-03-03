@@ -25,8 +25,7 @@ Important note
 **************
 
 It's important that this package isn't started by cronjob in non-production
-deployments. This is because the command is started by a zope
-ctl command.
+deployment. See non-production-info_ for more information.
 
 
 Compatibility
@@ -117,3 +116,49 @@ Copyright
 This package is copyright by `4teamwork <http://www.4teamwork.ch/>`_.
 
 ``ftw.linkchecker`` is licensed under GNU General Public License, version 2.
+
+
+Additional Notes
+================
+
+.. _non-production-info:
+
+Do not run in non-production
+****************************
+
+In our setup, bin/instance is a so called ZEO client.
+A ZEO client will, instead of directly opening a Data.fs,
+access the ZEO server over the network.
+In our setups, this is wired up via ftw-buildouts.
+
+Now, if the ZEO server cannot be reached (not running,
+network issues, misconfiguration, ...), the ZEO client will
+sleep for a bit, and try to reconnect.
+By default, it does this in an infinite loop and it will
+try to reconnect to the mothership until the end of time.
+For the regular instances (ZEP clients) running in supervisor,
+this is the ideal behavior: If the ZEO server temporarily cannot
+be reached, the clients will try to reconnect all by themselves.
+If the ZEO comes back up again, the system will fix itself without
+any need for intervention.
+
+However, when using bin/instance from cronjobs,
+this can lead to a problem. If at any given time the ZEO server
+cannot be reached (for whatever reason - accidentally stopped, misconfigured,
+network problems, ...), the client invoked by the cron job will attempt to
+reconnect forever. Therefore that script will never terminate
+(and return control to the shell). Instead it will keep running,
+and the next day (or whenever the cron job gets executed the next time),
+a new instance will be invoked, which will also hang.
+
+So every night another "hanging" process that's stuck in an infinite
+loop will be added. These can accumulate quickly, and lead to server-wide
+resource issues. One might hit limits like max max number of open file
+descriptors, number of processes per user, server memory, high load,
+max number of open sockets, ... If a situation like this ever happens,
+it's basically a matter of time until that entire server goes down (unless
+someone recognizes the issue and fixes it).
+
+Therefore there's at least a caveat when configuring cron jobs to run scripts
+like this. It doesn't necessarily mean it shouldn't be done, but it comes with
+an operational risk that's somewhat tricky to manage.
