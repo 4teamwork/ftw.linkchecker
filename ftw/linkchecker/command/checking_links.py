@@ -33,10 +33,10 @@ def check_links(app, args):
 
     for plone_site in plone_sites:
         # Init a PerSiteConfiguration object handling the context
-        site = PerSiteConfiguration(plone_site, configuration)
+        site_config = PerSiteConfiguration(plone_site, configuration)
 
         # Accumulate broken links in PloneSite
-        accumulator = Accumulator(site)
+        accumulator = Accumulator(site_config)
         accumulator.discover_broken_links()
 
         logger.info(
