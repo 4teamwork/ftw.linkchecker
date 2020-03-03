@@ -58,7 +58,8 @@ The following options can be configured in the config file per platform:
 - base URI (domain where the platform is configured - it will be prepended to the report)
 - timeout in seconds (how long the script waits for each external link before
   continuing if the page does not respond).
-- upload_location can be left empty. It is the path to a ``ftw.simplelayout`` file listing
+- upload_location can be left empty.
+  It could be a path to e.g. a ``ftw.simplelayout`` file listing
   block where the report will additionally be uploaded.
 
 
