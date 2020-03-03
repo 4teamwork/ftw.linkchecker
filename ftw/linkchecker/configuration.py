@@ -22,7 +22,7 @@ class Configuration(object):
                             help="Path to linkchecker config file.")
         parser.add_argument("--log",
                             help="Path to linkchecker log file.")
-        args, unknown = parser.parse_known_args()
+        args, unknown = parser.parse_args()
 
         self.config_file_path = safe_utf8(args.config)
         self.log_file_path = safe_utf8(args.log)
