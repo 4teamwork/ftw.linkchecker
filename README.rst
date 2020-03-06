@@ -59,8 +59,8 @@ The following options can be configured in the config file per platform:
 - timeout in seconds (how long the script waits for each external link before
   continuing if the page does not respond).
 - upload_location can be left empty.
-  It could be a path to e.g. a ``ftw.simplelayout`` file listing
-  block where the report will additionally be uploaded.
+  If set, it should be a path to a Plone container type (such as a Folder or a ``ftw.simplelayout`` file listing
+  block) where the report `File` will additionally be uploaded.
 
 
 ::
