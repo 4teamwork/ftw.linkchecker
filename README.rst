@@ -24,8 +24,12 @@ How it works
 Important note
 **************
 
-It's important that this package isn't started by cronjob in non-production
-deployment. See non-production-info_ for more information.
+You should be careful not to activate this script as a
+cronjob in environments where the ZEO server could be legitimately
+down for long periods (e.g. Staging / Test servers) as it could lead
+to locking up/crashing the entire machine.
+
+See non-production-info_ for more information.
 
 
 Compatibility
@@ -126,7 +130,8 @@ Additional Notes
 Do not run in non-production
 ****************************
 
-In our setup, bin/instance is a so called ZEO client.
+In development bin/instance is (usually) the Plone server.
+In other setups, bin/instance is a so called ZEO client.
 A ZEO client will, instead of directly opening a Data.fs,
 access the ZEO server over the network.
 In our setups, this is wired up via ftw-buildouts.
@@ -136,10 +141,10 @@ network issues, misconfiguration, ...), the ZEO client will
 sleep for a bit, and try to reconnect.
 By default, it does this in an infinite loop and it will
 try to reconnect to the mothership until the end of time.
-For the regular instances (ZEP clients) running in supervisor,
+For the regular instances (ZEO clients) running in supervisor,
 this is the ideal behavior: If the ZEO server temporarily cannot
 be reached, the clients will try to reconnect all by themselves.
-If the ZEO comes back up again, the system will fix itself without
+If the ZEO server comes back up again, the system will fix itself without
 any need for intervention.
 
 However, when using bin/instance from cronjobs,
