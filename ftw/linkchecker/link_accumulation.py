@@ -48,7 +48,7 @@ class Accumulator(object):
         link_objs = []
         for brain in brains:
             link_seeker = LinkOnFieldSeeker()
-            link_objs.extend(link_seeker.search_fields_for_links(brain))
+            link_objs.extend(link_seeker.find_links_on_brain_fields(brain))
 
         return link_objs
 
@@ -65,67 +65,72 @@ class Accumulator(object):
 
 class LinkOnFieldSeeker(object):
 
-    def search_fields_for_links(self, brain):
-        return self._find_links_on_brain_fields(brain)
-
-    def _find_links_on_brain_fields(self, brain):
+    def find_links_on_brain_fields(self, brain):
         obj = brain.getObject()
         link_objs = []
 
         if not queryUtility(IDexterityFTI, name=obj.portal_type):
-            # is not dexterity
-            plausible_fields = (
-                TextField,
-                ReferenceField,
-                ComputedField,
-                StringField)
-            for field in obj.Schema().fields():
-                if not isinstance(field, plausible_fields):
-                    continue
-                content = field.getRaw(obj)
-                if isinstance(field, ReferenceField):
-                    uid = content
-                    try:
-                        uid_from_relation = obj['at_ordered_refs']['relatesTo']
-                    except Exception:
-                        uid_from_relation = []
-                    uid.extend(uid_from_relation)
-                    self._append_to_link_and_relation_information_for_different_link_types(
-                        [[], uid, []], link_objs, obj)
-
-                if not isinstance(content, basestring):
-                    continue
-                # if there is a string having a valid scheme it will be embedded
-                # into a href, so we can use the same method as for the dexterity
-                # strings and do not need to change the main use case.
-                scheme = urlparse(content).scheme
-                if scheme and scheme in ['http', 'https']:
-                    content = 'href="%s"' % content
-                self._extract_and_append_link_objs(content, obj, link_objs)
-
+            link_objs = self._find_links_on_archetypes_brain_fields(obj, link_objs)
         else:
-            for name, field, schemata in self._iter_fields(obj.portal_type):
-                storage = schemata(obj)
-                fieldvalue = getattr(storage, name)
-                if not fieldvalue:
-                    continue
+            link_objs = self._find_links_on_dexterity_brain_fields(obj, link_objs)
 
-                if IRelation.providedBy(field):
-                    if fieldvalue.isBroken():
-                        link = Link()
-                        link.complete_information_for_broken_relation_with_broken_relation_obj(
-                            obj, field)
-                        link_objs.append(link)
+        return link_objs
 
-                elif IURI.providedBy(field):
+    def _find_links_on_dexterity_brain_fields(self, obj, link_objs):
+        for name, field, schemata in self._iter_fields(obj.portal_type):
+            storage = schemata(obj)
+            fieldvalue = getattr(storage, name)
+            if not fieldvalue:
+                continue
+
+            if IRelation.providedBy(field):
+                if fieldvalue.isBroken():
                     link = Link()
-                    link.complete_information_with_external_path(obj,
-                                                                 fieldvalue)
+                    link.complete_information_for_broken_relation_with_broken_relation_obj(
+                        obj, field)
                     link_objs.append(link)
 
-                elif IRichText.providedBy(field):
-                    content = fieldvalue.raw
-                    self._extract_and_append_link_objs(content, obj, link_objs)
+            elif IURI.providedBy(field):
+                link = Link()
+                link.complete_information_with_external_path(obj,
+                                                             fieldvalue)
+                link_objs.append(link)
+
+            elif IRichText.providedBy(field):
+                content = fieldvalue.raw
+                self._extract_and_append_link_objs(content, obj, link_objs)
+
+        return link_objs
+
+    def _find_links_on_archetypes_brain_fields(self, obj, link_objs):
+        plausible_fields = (
+            TextField,
+            ReferenceField,
+            ComputedField,
+            StringField)
+        for field in obj.Schema().fields():
+            if not isinstance(field, plausible_fields):
+                continue
+            content = field.getRaw(obj)
+            if isinstance(field, ReferenceField):
+                uid = content
+                try:
+                    uid_from_relation = obj['at_ordered_refs']['relatesTo']
+                except Exception:
+                    uid_from_relation = []
+                uid.extend(uid_from_relation)
+                self._append_to_link_and_relation_information_for_different_link_types(
+                    [[], uid, []], link_objs, obj)
+
+            if not isinstance(content, basestring):
+                continue
+            # if there is a string having a valid scheme it will be embedded
+            # into a href, so we can use the same method as for the dexterity
+            # strings and do not need to change the main use case.
+            scheme = urlparse(content).scheme
+            if scheme and scheme in ['http', 'https']:
+                content = 'href="%s"' % content
+            self._extract_and_append_link_objs(content, obj, link_objs)
 
         return link_objs
 
