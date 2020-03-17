@@ -1,4 +1,4 @@
-from ftw.linkchecker.accumulator import Accumulator
+from ftw.linkchecker.link_accumulation import Accumulator
 from ftw.linkchecker.per_site_configuration import PerSiteConfiguration
 from ftw.linkchecker.report_generating import ReportHandler
 from ftw.linkchecker.tests import FunctionalTestCase

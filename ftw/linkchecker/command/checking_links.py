@@ -1,7 +1,7 @@
 from ftw.linkchecker import LOGGER_NAME
 from ftw.linkchecker import setup_logger
-from ftw.linkchecker.accumulator import Accumulator
 from ftw.linkchecker.configuration import Configuration
+from ftw.linkchecker.link_accumulation import Accumulator
 from ftw.linkchecker.per_site_configuration import PerSiteConfiguration
 from ftw.linkchecker.report_generating import ReportHandler
 import logging

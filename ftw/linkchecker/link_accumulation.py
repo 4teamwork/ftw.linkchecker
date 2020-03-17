@@ -47,7 +47,8 @@ class Accumulator(object):
         brains = portal_catalog.unrestrictedSearchResults()
         link_objs = []
         for brain in brains:
-            link_objs.extend(self._find_links_on_brain_fields(brain))
+            link_seeker = LinkOnFieldSeeker()
+            link_objs.extend(link_seeker.search_fields_for_links(brain))
 
         return link_objs
 
@@ -60,6 +61,12 @@ class Accumulator(object):
                         link_obj.link_origin))
             elif not link_obj.is_internal:
                 self._external_link_objs.append(link_obj)
+
+
+class LinkOnFieldSeeker(object):
+
+    def search_fields_for_links(self, brain):
+        return self._find_links_on_brain_fields(brain)
 
     def _find_links_on_brain_fields(self, brain):
         obj = brain.getObject()
