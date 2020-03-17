@@ -1,6 +1,6 @@
 from ftw.builder import Builder
 from ftw.builder import create
-from ftw.linkchecker.accumulator import Accumulator
+from ftw.linkchecker.link_accumulation import Accumulator
 from ftw.linkchecker.per_site_configuration import PerSiteConfiguration
 from ftw.linkchecker.report_generating import ReportHandler
 from ftw.linkchecker.tests import MultiPageTestCase

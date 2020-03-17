@@ -1,4 +1,4 @@
-from ftw.linkchecker.accumulator import Accumulator
+from ftw.linkchecker.link_accumulation import LinkOnFieldSeeker
 from ftw.linkchecker.tests import FunctionalTestCase
 
 
@@ -7,8 +7,8 @@ class TestLinksInTextArea(FunctionalTestCase):
     def test_if_paths_from_textareas_are_correctly_joined_type_1(self):
         obj = self.textarea
         url = 'foo'
-        accumulator = Accumulator(self.portal)
-        res_path = accumulator._create_path_even_if_there_are_parent_pointers(
+        link_seeker = LinkOnFieldSeeker()
+        res_path = link_seeker._create_path_even_if_there_are_parent_pointers(
             obj, url)
 
         self.assertEqual(
@@ -20,8 +20,8 @@ class TestLinksInTextArea(FunctionalTestCase):
     def test_if_paths_from_textareas_are_correctly_joined_type_2(self):
         obj = self.textarea
         url = './foo'
-        accumulator = Accumulator(self.portal)
-        res_path = accumulator._create_path_even_if_there_are_parent_pointers(
+        link_seeker = LinkOnFieldSeeker()
+        res_path = link_seeker._create_path_even_if_there_are_parent_pointers(
             obj, url)
 
         self.assertEqual(
@@ -33,8 +33,8 @@ class TestLinksInTextArea(FunctionalTestCase):
     def test_if_paths_from_textareas_are_correctly_joined_type_3(self):
         obj = self.textarea
         url = '/foo'
-        accumulator = Accumulator(self.portal)
-        res_path = accumulator._create_path_even_if_there_are_parent_pointers(
+        link_seeker = LinkOnFieldSeeker()
+        res_path = link_seeker._create_path_even_if_there_are_parent_pointers(
             obj, url)
 
         self.assertEqual(
@@ -46,8 +46,8 @@ class TestLinksInTextArea(FunctionalTestCase):
     def test_if_paths_from_textareas_are_correctly_joined_type_4(self):
         obj = self.textarea
         url = '../../../../foo'
-        accumulator = Accumulator(self.portal)
-        res_path = accumulator._create_path_even_if_there_are_parent_pointers(
+        link_seeker = LinkOnFieldSeeker()
+        res_path = link_seeker._create_path_even_if_there_are_parent_pointers(
             obj, url)
 
         self.assertEqual(
