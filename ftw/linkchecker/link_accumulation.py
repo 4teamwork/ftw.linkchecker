@@ -249,30 +249,38 @@ class ArchetypeSeeker(BaseSeeker):
             ComputedField,
             StringField)
         for field in obj.Schema().fields():
+            # nothing to find if the field is not plausible
             if not isinstance(field, plausible_fields):
                 continue
+            # extract either from ReferenceField or other fields
             content = field.getRaw(obj)
             if isinstance(field, ReferenceField):
-                uid = content
-                try:
-                    uid_from_relation = obj['at_ordered_refs']['relatesTo']
-                except Exception:
-                    uid_from_relation = []
-                uid.extend(uid_from_relation)
-                self._append_to_link_and_relation_information_for_different_link_types(
-                    [[], uid, []], link_objs, obj)
-
-            if not isinstance(content, basestring):
-                continue
-            # if there is a string having a valid scheme it will be embedded
-            # into a href, so we can use the same method as for the dexterity
-            # strings and do not need to change the main use case.
-            scheme = urlparse(content).scheme
-            if scheme and scheme in ['http', 'https']:
-                content = 'href="%s"' % content
-            self._extract_and_append_link_objs(content, obj, link_objs)
+                self._extend_from_ReferenceField(obj, content, link_objs)
+            else:
+                self._extend_from_other_field(obj, content, link_objs)
 
         return link_objs
+
+    def _extend_from_ReferenceField(self, obj, content, link_objs):
+        uid = content
+        try:
+            uid_from_relation = obj['at_ordered_refs']['relatesTo']
+        except Exception:
+            uid_from_relation = []
+        uid.extend(uid_from_relation)
+        self._append_to_link_and_relation_information_for_different_link_types(
+            [[], uid, []], link_objs, obj)
+
+    def _extend_from_other_field(self, obj, content, link_objs):
+        if not isinstance(content, basestring):
+            return
+        # if there is a string having a valid scheme it will be embedded
+        # into a href, so we can use the same method as for the dexterity
+        # strings and do not need to change the main use case.
+        scheme = urlparse(content).scheme
+        if scheme and scheme in ['http', 'https']:
+            content = 'href="%s"' % content
+        self._extract_and_append_link_objs(content, obj, link_objs)
 
 
 class DexteritySeeker(BaseSeeker):
