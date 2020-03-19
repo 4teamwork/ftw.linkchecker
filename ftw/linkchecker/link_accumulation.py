@@ -64,6 +64,15 @@ class Accumulator(object):
 
 
 class LinkOnFieldSeeker(object):
+    """Seek for link-like patterns in likely fields on objects.
+
+    In summary these steps are done by the LinkOnFieldSeeker:
+      - Differentiate between Archetype/Dexterity objects
+      - Collect all fields in the Plone schemata objects
+      - Extract fields which have the capability of holding text
+      - Search the text for link-like text parts
+      - Collect the link-like text parts
+    """
 
     def find_links_on_brain_fields(self, brain):
         obj = brain.getObject()
