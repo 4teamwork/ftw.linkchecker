@@ -6,6 +6,7 @@ Changelog
 ------------------
 
 - Refactoring of modules and tests. [busykoala]
+- Refactor especially the accumulator module. [busykoala]
 
 
 1.3.2 (2019-10-15)
