@@ -45,9 +45,9 @@ class Accumulator(object):
     def _get_all_links(self):
         portal_catalog = api.portal.get_tool('portal_catalog')
         brains = portal_catalog.unrestrictedSearchResults()
+        link_seeker = LinkOnFieldSeeker()
         link_objs = []
         for brain in brains:
-            link_seeker = LinkOnFieldSeeker()
             link_objs.extend(link_seeker.find_links_on_brain_fields(brain))
 
         return link_objs
