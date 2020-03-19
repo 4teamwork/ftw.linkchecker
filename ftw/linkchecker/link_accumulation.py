@@ -78,107 +78,21 @@ class LinkOnFieldSeeker(object):
         obj = brain.getObject()
         link_objs = []
 
-        if not queryUtility(IDexterityFTI, name=obj.portal_type):
-            link_objs = self._find_links_on_archetypes_brain_fields(obj, link_objs)
+        seeker = self._construct_seeker(brain)
+        seeker.append_links(obj, link_objs)
+
+        return link_objs
+
+    def _construct_seeker(self, obj):
+        """Get type specific seeker instance.
+        """
+        if queryUtility(IDexterityFTI, name=obj.portal_type):
+            return DexteritySeeker()
         else:
-            link_objs = self._find_links_on_dexterity_brain_fields(obj, link_objs)
+            return ArchetypeSeeker()
 
-        return link_objs
 
-    def _find_links_on_dexterity_brain_fields(self, obj, link_objs):
-        for name, field, schemata in self._iter_fields(obj.portal_type):
-            storage = schemata(obj)
-            fieldvalue = getattr(storage, name)
-            if not fieldvalue:
-                continue
-
-            if IRelation.providedBy(field):
-                if fieldvalue.isBroken():
-                    link = Link()
-                    link.complete_information_for_broken_relation_with_broken_relation_obj(
-                        obj, field)
-                    link_objs.append(link)
-
-            elif IURI.providedBy(field):
-                link = Link()
-                link.complete_information_with_external_path(obj,
-                                                             fieldvalue)
-                link_objs.append(link)
-
-            elif IRichText.providedBy(field):
-                content = fieldvalue.raw
-                self._extract_and_append_link_objs(content, obj, link_objs)
-
-        return link_objs
-
-    def _find_links_on_archetypes_brain_fields(self, obj, link_objs):
-        plausible_fields = (
-            TextField,
-            ReferenceField,
-            ComputedField,
-            StringField)
-        for field in obj.Schema().fields():
-            if not isinstance(field, plausible_fields):
-                continue
-            content = field.getRaw(obj)
-            if isinstance(field, ReferenceField):
-                uid = content
-                try:
-                    uid_from_relation = obj['at_ordered_refs']['relatesTo']
-                except Exception:
-                    uid_from_relation = []
-                uid.extend(uid_from_relation)
-                self._append_to_link_and_relation_information_for_different_link_types(
-                    [[], uid, []], link_objs, obj)
-
-            if not isinstance(content, basestring):
-                continue
-            # if there is a string having a valid scheme it will be embedded
-            # into a href, so we can use the same method as for the dexterity
-            # strings and do not need to change the main use case.
-            scheme = urlparse(content).scheme
-            if scheme and scheme in ['http', 'https']:
-                content = 'href="%s"' % content
-            self._extract_and_append_link_objs(content, obj, link_objs)
-
-        return link_objs
-
-    def _count_parent_pointers(self, path_segments):
-        if not path_segments:
-            return 0
-        if path_segments[0] != '..':
-            return 0
-        for index, segment in enumerate(path_segments):
-            if segment == '..':
-                continue
-            else:
-                break
-        return index + 1
-
-    def _create_path_even_if_there_are_parent_pointers(self, obj, url):
-        portal_path_segments = api.portal.get().getPhysicalPath()
-        current_path_segments = obj.aq_parent.getPhysicalPath()
-        destination_path_segments = filter(len, url.split('/'))
-        destination_path = '/'.join(destination_path_segments)
-        portal_path = '/'.join(portal_path_segments)
-
-        number_of_parent_pointers = self._count_parent_pointers(
-            destination_path_segments)
-        if number_of_parent_pointers >= len(current_path_segments) - len(
-                portal_path_segments):
-            new_path = portal_path + '/' + destination_path.lstrip('../')
-            return new_path
-        else:
-            if url.startswith('/'):
-                output_path = portal_path + url
-            else:
-                # XXX: < plone5, relative paths are appended to the basepath having a
-                # slash at the end. For plone5 support we need to look at this again.
-                output_path = urljoin(
-                    '/'.join(list(
-                        obj.aq_parent.getPhysicalPath()) + ['']), url)
-
-            return output_path
+class BaseSeeker(object):
 
     def _extract_and_append_link_objs(self, content, obj, link_objs):
         links_and_relations_from_rich_text = self._extract_links_and_relations(
@@ -186,21 +100,6 @@ class LinkOnFieldSeeker(object):
         self._append_to_link_and_relation_information_for_different_link_types(
             links_and_relations_from_rich_text,
             link_objs, obj)
-
-    def _iter_fields(self, portal_type):
-        for schemata in self._iter_schemata_for_protal_type(portal_type):
-            for name, field in getFieldsInOrder(schemata):
-                if not getattr(field, 'readonly', False):
-                    yield (name, field, schemata)
-
-    def _iter_schemata_for_protal_type(self, portal_type):
-        if queryUtility(IDexterityFTI, name=portal_type):
-            # is dexterity
-            fti = getUtility(IDexterityFTI, name=portal_type)
-
-            yield fti.lookupSchema()
-            for schema in getAdditionalSchemata(portal_type=portal_type):
-                yield schema
 
     def _extract_links_and_relations(self, content, obj):
         if not isinstance(content, basestring):
@@ -276,3 +175,119 @@ class LinkOnFieldSeeker(object):
             link = Link()
             link.complete_information_with_internal_path(obj, path)
             link_and_relation_information.append(link)
+
+    def _create_path_even_if_there_are_parent_pointers(self, obj, url):
+        portal_path_segments = api.portal.get().getPhysicalPath()
+        current_path_segments = obj.aq_parent.getPhysicalPath()
+        destination_path_segments = filter(len, url.split('/'))
+        destination_path = '/'.join(destination_path_segments)
+        portal_path = '/'.join(portal_path_segments)
+
+        number_of_parent_pointers = self._count_parent_pointers(
+            destination_path_segments)
+        if number_of_parent_pointers >= len(current_path_segments) - len(
+                portal_path_segments):
+            new_path = portal_path + '/' + destination_path.lstrip('../')
+            return new_path
+        else:
+            if url.startswith('/'):
+                output_path = portal_path + url
+            else:
+                # XXX: < plone5, relative paths are appended to the basepath having a
+                # slash at the end. For plone5 support we need to look at this again.
+                output_path = urljoin(
+                    '/'.join(list(
+                        obj.aq_parent.getPhysicalPath()) + ['']), url)
+
+            return output_path
+
+    def _count_parent_pointers(self, path_segments):
+        if not path_segments:
+            return 0
+        if path_segments[0] != '..':
+            return 0
+        for index, segment in enumerate(path_segments):
+            if segment == '..':
+                continue
+            else:
+                break
+        return index + 1
+
+
+class ArchetypeSeeker(BaseSeeker):
+
+    def append_links(self, obj, link_objs):
+        plausible_fields = (
+            TextField,
+            ReferenceField,
+            ComputedField,
+            StringField)
+        for field in obj.Schema().fields():
+            if not isinstance(field, plausible_fields):
+                continue
+            content = field.getRaw(obj)
+            if isinstance(field, ReferenceField):
+                uid = content
+                try:
+                    uid_from_relation = obj['at_ordered_refs']['relatesTo']
+                except Exception:
+                    uid_from_relation = []
+                uid.extend(uid_from_relation)
+                self._append_to_link_and_relation_information_for_different_link_types(
+                    [[], uid, []], link_objs, obj)
+
+            if not isinstance(content, basestring):
+                continue
+            # if there is a string having a valid scheme it will be embedded
+            # into a href, so we can use the same method as for the dexterity
+            # strings and do not need to change the main use case.
+            scheme = urlparse(content).scheme
+            if scheme and scheme in ['http', 'https']:
+                content = 'href="%s"' % content
+            self._extract_and_append_link_objs(content, obj, link_objs)
+
+        return link_objs
+
+
+class DexteritySeeker(BaseSeeker):
+
+    def append_links(self, obj, link_objs):
+        for name, field, schemata in self._iter_fields(obj.portal_type):
+            storage = schemata(obj)
+            fieldvalue = getattr(storage, name)
+            if not fieldvalue:
+                continue
+
+            if IRelation.providedBy(field):
+                if fieldvalue.isBroken():
+                    link = Link()
+                    link.complete_information_for_broken_relation_with_broken_relation_obj(
+                        obj, field)
+                    link_objs.append(link)
+
+            elif IURI.providedBy(field):
+                link = Link()
+                link.complete_information_with_external_path(obj,
+                                                             fieldvalue)
+                link_objs.append(link)
+
+            elif IRichText.providedBy(field):
+                content = fieldvalue.raw
+                self._extract_and_append_link_objs(content, obj, link_objs)
+
+        return link_objs
+
+    def _iter_fields(self, portal_type):
+        for schemata in self._iter_schemata_for_protal_type(portal_type):
+            for name, field in getFieldsInOrder(schemata):
+                if not getattr(field, 'readonly', False):
+                    yield (name, field, schemata)
+
+    def _iter_schemata_for_protal_type(self, portal_type):
+        if queryUtility(IDexterityFTI, name=portal_type):
+            # is dexterity
+            fti = getUtility(IDexterityFTI, name=portal_type)
+
+            yield fti.lookupSchema()
+            for schema in getAdditionalSchemata(portal_type=portal_type):
+                yield schema
