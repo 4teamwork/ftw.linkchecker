@@ -21,6 +21,12 @@ import re
 
 
 class Accumulator(object):
+    """Helper class to accumulate link objects in a Plone site.
+
+    The Accumulator collects all brains within a Plone site. By making use
+    of the LinkOnFieldSeeker Link objects are collected. The collected Link
+    objects are then checked to be valid or broken.
+    """
 
     def __init__(self, site_config):
         self.time_external_routine = 0
@@ -66,12 +72,16 @@ class Accumulator(object):
 class LinkOnFieldSeeker(object):
     """Seek for link-like patterns in likely fields on objects.
 
-    In summary these steps are done by the LinkOnFieldSeeker:
+    The main functionality of this class is delegated to either an
+    ArchetypeSeeker or a DexteritySeeker which do most of the work.
+
+    Including what we gain from delegating, these steps are done:
       - Differentiate between Archetype/Dexterity objects
-      - Collect all fields in the Plone schemata objects
-      - Extract fields which have the capability of holding text
-      - Search the text for link-like text parts
+      - Collect all fields in the Plone schema objects
+      - Filter fields which have the capability of holding text
+      - Search the text within the fields for link-like text parts
       - Collect the link-like text parts
+      - Instantiate Link objects for the matches
     """
 
     def find_links_on_brain_fields(self, brain):
@@ -93,6 +103,13 @@ class LinkOnFieldSeeker(object):
 
 
 class BaseSeeker(object):
+    """Base class for searching link-like strings.
+
+    This base class is meant to be inherited by a more specific class.
+    On its own its more of a set of helper tools to find link-like strings in
+    text, completing Plone paths and sorting links by external url and internal
+    reference (path or uid).
+    """
 
     def _extract_and_append_link_objs(self, content, obj, link_objs):
         links_and_relations_from_rich_text = self._extract_links_and_relations(
@@ -215,6 +232,15 @@ class BaseSeeker(object):
 
 
 class ArchetypeSeeker(BaseSeeker):
+    """Specific implementation of the BaseSeeker for AT objects.
+
+    Using the BaseSeeker class the ArchetypeSeeker iterates the fields of
+    a Archetype type object schema. If the field is one likely containing any
+    links (text fields, reference fields etc.) it is searched for link-like
+    strings.
+    The strings are sorted by UIDs, external links or internal links and then
+    as a link object (holding additional information) appended to a list.
+    """
 
     def append_links(self, obj, link_objs):
         plausible_fields = (
@@ -250,6 +276,15 @@ class ArchetypeSeeker(BaseSeeker):
 
 
 class DexteritySeeker(BaseSeeker):
+    """Specific implementation of the BaseSeeker for DX objects.
+
+    Using the BaseSeeker class the DexteritySeeker iterates the fields of
+    a Dexterity type object schema. If the field is one likely containing any
+    links (text fields, reference fields etc.) it is searched for link-like
+    strings.
+    The strings are sorted by UIDs, external links or internal links and then
+    as a link object (holding additional information) appended to a list.
+    """
 
     def append_links(self, obj, link_objs):
         for name, field, schemata in self._iter_fields(obj.portal_type):
