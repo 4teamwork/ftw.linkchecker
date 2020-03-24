@@ -17,15 +17,17 @@ class Configuration(object):
         self._extract_config()
 
     def _parse_arguments(self, args):
-        parser = argparse.ArgumentParser()
-        parser.add_argument("--config",
-                            help="Path to linkchecker config file.")
-        parser.add_argument("--log",
-                            help="Path to linkchecker log file.")
+        parser = argparse.ArgumentParser(
+            usage='bin/instance check_links settings [-l logpath]')
+        parser.add_argument('-c', '--command', help=argparse.SUPPRESS)
+        parser.add_argument('settings',
+                            help='Path of the linkchecker settings file.')
+        parser.add_argument('-l', '--logpath',
+                            help='Path of the linkchecker log file.')
         args = parser.parse_args()
 
-        self.config_file_path = safe_utf8(args.config)
-        self.log_file_path = safe_utf8(args.log)
+        self.config_file_path = safe_utf8(args.settings)
+        self.log_file_path = safe_utf8(args.logpath)
 
     def _validate_args(self):
         if not self.config_file_path or not os.path.exists(
