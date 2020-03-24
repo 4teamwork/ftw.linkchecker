@@ -10,6 +10,7 @@ class Configuration(object):
     def __init__(self, args):
         self.config_file_path = ''
         self.log_file_path = ''
+        self.max_processes = None
         self.sites = []
 
         self._parse_arguments(args)
@@ -18,16 +19,19 @@ class Configuration(object):
 
     def _parse_arguments(self, args):
         parser = argparse.ArgumentParser(
-            usage='bin/instance check_links settings [-l logpath]')
+            usage='bin/instance check_links settings [-l logpath] [-p processes]')
         parser.add_argument('-c', '--command', help=argparse.SUPPRESS)
         parser.add_argument('settings',
                             help='Path of the linkchecker settings file.')
         parser.add_argument('-l', '--logpath',
                             help='Path of the linkchecker log file.')
+        parser.add_argument('-p', '--processes', type=int,
+                            help='Max. number of processes spawned.')
         args = parser.parse_args()
 
         self.config_file_path = safe_utf8(args.settings)
         self.log_file_path = safe_utf8(args.logpath)
+        self.max_processes = int(args.processes)
 
     def _validate_args(self):
         if not self.config_file_path or not os.path.exists(

@@ -43,7 +43,12 @@ class Accumulator(object):
 
         status_checker = StatusChecker(
             self._external_link_objs, self._site_config.configuration.timeout_config)
-        status_checker.work_through_urls()
+
+        if self._site_config.max_processes:
+            status_checker.work_through_urls(
+                processes=self._site_config.max_processes)
+        else:
+            status_checker.work_through_urls()
 
         self.external_broken_link_objs = status_checker.broken_external_links
         self.time_external_routine = status_checker.total_time

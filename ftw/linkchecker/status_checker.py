@@ -17,10 +17,10 @@ class StatusChecker(object):
         self._external_link_objs = external_link_objs
         self._timeout_config = timeout_config
 
-    def work_through_urls(self):
+    def work_through_urls(self, processes=cpu_count()):
         # prepare worker function and pool
         part_get_uri_response = partial(_get_uri_response, timeout=self._timeout_config)
-        pool = PoolWithLogging(processes=cpu_count(), logger_name=LOGGER_NAME)
+        pool = PoolWithLogging(processes=processes, logger_name=LOGGER_NAME)
 
         start_time = _millis()
         self._external_link_objs = pool.map(
