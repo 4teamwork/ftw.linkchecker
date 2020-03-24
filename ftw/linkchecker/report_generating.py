@@ -133,9 +133,9 @@ class ReportHandler(object):
             self._file_name)
 
     def upload_report(self):
-        if self._site.configuration.upload_location:
+        if self._site.upload_path:
             self._upload_report_to_filelistingblock(
-                self._site.configuration.upload_location,
+                self._site.upload_path,
                 self._xlsx_file,
                 self._file_name)
 
