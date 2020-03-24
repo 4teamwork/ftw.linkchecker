@@ -42,11 +42,11 @@ def check_links(app, args):
         logger.info(
             'Finished going through all brains of "{}" and fetching for '
             'external Links. Total time fetching for external Links: '
-            '{}ms.'.format(site.configuration.site_name,
+            '{}ms.'.format(site_config.configuration.site_name,
                            accumulator.time_external_routine))
 
         # Send and Upload report
-        report_handler = ReportHandler(site, accumulator)
+        report_handler = ReportHandler(site_config, accumulator)
         report_handler.send_report()
         report_handler.upload_report()
 
