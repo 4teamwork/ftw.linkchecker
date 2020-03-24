@@ -12,7 +12,7 @@ as a cronjob regularly to find and report broken links and references within Plo
 How it works
 ****************
 
-- The config file is inspected and the information per site configuration extracted.
+- The settings file is inspected and the information gets extracted per site.
 - For each Plone site (whether configured or not) in the zope instance:
     - All fields possibly containing links are analysed and link/relation like
       strings are collected and stored as link objects with some additional info.
@@ -51,11 +51,11 @@ Installation
         ftw.linkchecker
 
 
-Configuration
-=============
+Settings
+========
 
-A JSON configuration file is required (see below for an example).
-The following options can be configured in the config file per platform:
+A JSON settings file is required (see below for an example).
+The following options can be configured in the settings file per platform:
 
 - emails of the platforms administrator (the ones who gets the report)
 - base URI (domain where the platform is configured - it will be prepended to the report)
@@ -86,11 +86,16 @@ The following options can be configured in the config file per platform:
 Usage
 =====
 
-The linkchecker can be started with the command below (`--log logpath` optional):
+Run command for ftw.linkchecker.
 
 ::
 
-    bin/instance check_links --config path/to/config/file.json --log path/to/logfile.log
+    bin/instance check_links /path/to/settings.json [-l /path/to/logfile.log]
+
+
+- The first (positional) argument is the path to the settings file.
+- The second (optional) argument (prefixed with ``-l`` or ``--logpath``) is
+  the path to a logfile (which was created in advance).
 
 
 Development
