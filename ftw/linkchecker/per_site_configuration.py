@@ -13,6 +13,7 @@ class PerSiteConfiguration():
 
     def __init__(self, plone_site, configuration):
         self.configuration = configuration
+        self.max_processes = configuration.max_processes
         self.upload_path = ''
         self.logger = logging.getLogger(LOGGER_NAME)
 

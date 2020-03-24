@@ -90,12 +90,14 @@ Run command for ftw.linkchecker.
 
 ::
 
-    bin/instance check_links /path/to/settings.json [-l /path/to/logfile.log]
+    bin/instance check_links /path/to/settings.json [-l /path/to/logfile.log] [-p processes]
 
 
 - The first (positional) argument is the path to the settings file.
 - The second (optional) argument (prefixed with ``-l`` or ``--logpath``) is
   the path to a logfile (which was created in advance).
+- The third (optional) argument (prefixed with ``-p`` or ``--processes``) is
+  the maximal number of processes spawned for the head requests.
 
 
 Development
