@@ -1,0 +1,25 @@
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en"
+      xmlns:metal="http://xml.zope.org/namespaces/metal"
+      metal:use-macro="here/main_template/macros/master"
+      xmlns:tal="http://xml.zope.org/namespaces/tal"
+      i18n:domain="ftw.linkchecker"
+      lang="en">
+
+  <body>
+
+    <metal:main fill-slot="content-title">
+      <h1 class="documentFirstHeading" i18n:translate="">Linkchecker Dashboard</h1>
+    </metal:main>
+
+    <div metal:fill-slot="content-core">
+      <p>
+      Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+      Illa videamus, quae a te de amicitia dicta sunt.
+      Rationis enim perfectio est virtus;
+      Quis contra in illa aetate pudorem, constantiam,
+      etiamsi sua nihil intersit, non tamen diligat?
+      </p>
+    </div>
+
+  </body>
+</html>
