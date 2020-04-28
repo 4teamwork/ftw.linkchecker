@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<registry>
+    <record name="ftw.linkchecker.dashboard_storage">
+        <field type="plone.registry.field.TextLine">
+            <title>Storage of the linkchecker dashboard.</title>
+            <required>False</required>
+        </field>
+        <value>linkchecker/reports</value>
+    </record>
+</registry>

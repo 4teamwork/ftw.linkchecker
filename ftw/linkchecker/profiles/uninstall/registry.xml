@@ -1,0 +1,4 @@
+<?xml version="1.0"?>
+<registry>
+    <record name="ftw.linkchecker.dashboard_storage" remove="True" />
+</registry>
