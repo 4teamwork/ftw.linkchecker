@@ -32,6 +32,11 @@ install_requires = [
     'setuptools',
     'ftw.upgrade',
     'xlsxwriter',
+    # later versions of pandas require python-dateutil>=2.5.0
+    'pandas < 0.23.0',
+    # from numpy 1.17.0 only python >= 3.5 is supported
+    'numpy < 1.17.0',
+    'xlrd >= 0.9.0',
     'plone.api',
     'plone.app.relationfield',
     'plone.recipe.zope2instance',

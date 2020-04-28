@@ -1,6 +1,8 @@
 from plone import api
 from zope.annotation.interfaces import IAnnotations
 from zope.publisher.browser import BrowserView
+import io
+import pandas as pd
 
 
 class Dashboard(BrowserView):
@@ -28,6 +30,16 @@ class DashboardModel(object):
     def _get_annotation(self):
         annotations = IAnnotations(self.context)
         return annotations['ftw.linkchecker.link_data']
+
+    def _get_latest_report_from_excel(self):
+        portal = api.portal.get()
+        file_listing_block = portal.unrestrictedTraverse('linkchecker/reports')
+        reports = file_listing_block.items()
+
+        # TODO sort reports by date newest to oldest
+
+        filename, report = reports[0]
+        return pd.read_excel(io.BytesIO(report.get_data()))
 
 
 class GraphGenerator(object):
