@@ -29,4 +29,6 @@
         for="Products.CMFPlone.interfaces.IMigratingPloneSiteRoot"
         />
 
+    <include package=".upgrades" />
+
 </configure>
