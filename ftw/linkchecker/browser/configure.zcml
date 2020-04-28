@@ -1,0 +1,15 @@
+<configure
+    xmlns="http://namespaces.zope.org/zope"
+    xmlns:zcml="http://namespaces.zope.org/zcml"
+    xmlns:browser="http://namespaces.zope.org/browser"
+    i18n_domain="ftw.linkchecker">
+
+    <browser:page
+        for="Products.CMFPlone.interfaces.siteroot.IPloneSiteRoot"
+        name="linkchecker-dashboard"
+        permission="ftw.linkchecker.ViewDashboard"
+        class=".dashboard.Dashboard"
+        template="dashboard.pt"
+        />
+
+</configure>

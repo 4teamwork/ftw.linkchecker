@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<rolemap>
+    <permissions>
+        <permission name="ftw.linkchecker: View dashboard" acquire="False">
+            <role name="Reviewer"/>
+            <role name="Manager"/>
+            <role name="Site Administrator"/>
+        </permission>
+    </permissions>
+</rolemap>
