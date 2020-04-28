@@ -20,6 +20,7 @@ tests_require = [
     'requests',
     'xlsxwriter',
     'ftw.simplelayout [contenttypes]',
+    'parameterized',
 ]
 
 extras_require = {
