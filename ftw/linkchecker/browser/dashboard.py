@@ -1,4 +1,5 @@
 from datetime import datetime
+from numpy import nan
 from plone import api
 from zope.annotation.interfaces import IAnnotations
 from zope.publisher.browser import BrowserView
@@ -35,10 +36,21 @@ class DashboardModel(object):
                 self.data = self._update_data()
             else:
                 # add data the first time
-                pass
+                df_new = self._latest_report_df
+                df_new['is_done'] = False
+                df_new['responsible'] = nan
+                self._set_annotation(
+                    {'timestamp': self._timestamp_new,
+                     'report_data': df_new.to_dict('records')})
+                self.data = df_new
         else:
-            # no data or no new data found
-            self.data = self._persisted_data
+            if self._persisted_data:
+                # no new data found
+                self.data = pd.DataFrame.from_dict(
+                    self._persisted_data['report_data'])
+            else:
+                # no data found
+                self.data = pd.DataFrame()
 
     def _update_data(self):
         # use only key cols and unique cols
