@@ -1,3 +1,4 @@
+from datetime import datetime
 from plone import api
 from zope.annotation.interfaces import IAnnotations
 from zope.publisher.browser import BrowserView
@@ -36,10 +37,15 @@ class DashboardModel(object):
         report_path = self._get_report_path().encode('utf-8')
         file_listing_block = portal.unrestrictedTraverse(report_path)
         reports = file_listing_block.items()
+        # sort by date in file name (latest first)
+        reports = [
+            (datetime.strptime(report[0][19:-5], '%Y_%b_%d_%H%M%S'), report[1])
+            for report in reports]
+        reports.sort(key=lambda x: x[0], reverse=True)
 
-        # TODO sort reports by date newest to oldest
+        # TODO: do not read data into memory if there is no new report
 
-        filename, report = reports[0]
+        report_date, report = reports[0]
         return pd.read_excel(io.BytesIO(report.get_data()))
 
 
