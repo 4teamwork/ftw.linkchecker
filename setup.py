@@ -8,14 +8,14 @@ version = '1.3.3.dev0'
 
 tests_require = [
     'ftw.builder',
+    'ftw.simplelayout [contenttypes]',
     'ftw.testbrowser',
     'ftw.testing',
+    'parameterized',
     'plone.app.testing',
     'plone.testing',
     'requests',
     'xlsxwriter',
-    'ftw.simplelayout [contenttypes]',
-    'parameterized',
 ]
 
 extras_require = {
@@ -24,7 +24,6 @@ extras_require = {
 
 install_requires = [
     'Plone',
-    'setuptools',
     'ftw.upgrade',
     'xlsxwriter',
     'pandas < 0.23a',
