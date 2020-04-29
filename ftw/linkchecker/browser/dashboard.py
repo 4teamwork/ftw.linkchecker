@@ -33,7 +33,8 @@ class DashboardModel(object):
 
     def _get_latest_report_from_excel(self):
         portal = api.portal.get()
-        file_listing_block = portal.unrestrictedTraverse('linkchecker/reports')
+        report_path = self._get_report_path().encode('utf-8')
+        file_listing_block = portal.unrestrictedTraverse(report_path)
         reports = file_listing_block.items()
 
         # TODO sort reports by date newest to oldest
