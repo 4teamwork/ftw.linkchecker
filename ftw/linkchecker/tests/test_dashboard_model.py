@@ -45,7 +45,7 @@ class TestDashboardFunctional(FunctionalTestCase):
 
         # prepare dataframes to compare
         df_expected = pd.read_excel(TEST_REPORT)
-        df_actual = dashboard.dashboard_model._get_latest_report_from_excel()
+        df_actual = dashboard.dashboard_model._latest_report_df
 
         pd.testing.assert_frame_equal(df_expected, df_actual)
 
