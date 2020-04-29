@@ -2,6 +2,7 @@ from ftw.builder import Builder
 from ftw.builder import create
 from ftw.linkchecker.browser.dashboard import Dashboard
 from ftw.linkchecker.tests import FunctionalTestCase
+from ftw.linkchecker.tests.exemplar_data.annotation_asset import ANNOTATION_ASSET
 from plone import api
 import os
 import pandas as pd
@@ -13,10 +14,10 @@ TEST_FOLDER_PATH = os.path.dirname(os.path.abspath(__file__))
 TEST_REPORT = os.path.join(TEST_FOLDER_PATH, 'exemplar_data', ASSET_NAME)
 
 
-class TestDashboardFunctional(FunctionalTestCase):
+class TestDashboardModelFunctional(FunctionalTestCase):
 
     def setUp(self):
-        super(TestDashboardFunctional, self).setUp()
+        super(TestDashboardModelFunctional, self).setUp()
         self.grant(self.portal, 'Manager')
 
     def test_read_path_from_registry(self):
@@ -48,6 +49,36 @@ class TestDashboardFunctional(FunctionalTestCase):
         df_actual = dashboard.dashboard_model._latest_report_df
 
         pd.testing.assert_frame_equal(df_expected, df_actual)
+
+    def test_first_time_loading_page_with_no_persisted_data(self):
+        # TODO: implement
+        pass
+
+    def test_merging_data(self):
+        self.create_file_listing_block_with_report()
+        dashboard = Dashboard(self.portal, self.request)
+        # set annotations to update later
+        dashboard.dashboard_model._set_annotation(ANNOTATION_ASSET)
+
+        # load dashboard again
+        dashboard = Dashboard(self.portal, self.request)
+        df = dashboard.dashboard_model.data
+
+        self.assertEqual(
+            'hugo', df.at[0, 'responsible'],
+            'The user \'hugo\' should be responsible for finanzgeschaefte.')
+
+        self.assertFalse(
+            df.at[0, 'is_done'],
+            'The link was marked done but appeared in new report again.')
+
+        self.assertFalse(
+            len(df[df['Destination'].str.contains('brettterpstra')]),
+            'The link containing brettterpstra is not in the new report.')
+
+        self.assertTrue(
+            len(df[df['Destination'].str.contains('gruener')]),
+            'The link containing gruener is in the new report.')
 
     def create_file_listing_block_with_report(self):
         # build structure so that there is an excel report at

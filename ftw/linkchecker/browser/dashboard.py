@@ -4,6 +4,7 @@ from zope.annotation.interfaces import IAnnotations
 from zope.publisher.browser import BrowserView
 import io
 import pandas as pd
+import time
 
 
 class Dashboard(BrowserView):
@@ -20,17 +21,42 @@ class DashboardModel(object):
         self.request = request
         self.context = context
 
+        self.data = None
         self._persisted_data = self._get_annotation()
-        self._timestamp = self._persisted_data.get('timestamp', 0)
+        self._timestamp_old = self._persisted_data.get('timestamp', 0)
+        self._timestamp_new = None
         self._reports = self._load_and_sort_fileblock_reports()
 
         self._latest_report_df = self._get_latest_report_df_from_excel()
         if isinstance(self._latest_report_df, pd.DataFrame):
-            # there is new data -> update/merge data
-            pass
+            # there is new data
+            if self._persisted_data:
+                # update existing data
+                self.data = self._update_data()
+            else:
+                # add data the first time
+                pass
         else:
             # no data or no new data found
-            pass
+            self.data = self._persisted_data
+
+    def _update_data(self):
+        # use only key cols and unique cols
+        df_old = pd.DataFrame.from_dict(self._persisted_data['report_data'])
+        df_old = df_old[['Origin', 'Destination', 'responsible']]
+        # use all cols plus add is_done with default False
+        df_new = self._latest_report_df
+        df_new['is_done'] = False
+        # merge by keys Origin and Destination
+        merged = df_old.merge(df_new, on=['Origin', 'Destination'], how='outer')
+        # if Internal/External is NaN (only in old report) -> drop row
+        merged = merged[merged['Internal/External'].notna()]
+
+        self._set_annotation(
+            {'timestamp': self._timestamp_new,
+             'report_data': merged.to_dict('records')})
+
+        return merged
 
     def _get_report_path(self):
         return api.portal.get_registry_record(
@@ -51,7 +77,7 @@ class DashboardModel(object):
         if not self._reports:
             return
 
-        dt_current = datetime.fromtimestamp(self._timestamp)
+        dt_current = datetime.fromtimestamp(self._timestamp_old)
         if self._reports[0][0] > dt_current:
             return True
 
@@ -77,6 +103,7 @@ class DashboardModel(object):
         if not self._reports or not self._has_more_recent_report():
             return
         report_date, report = self._reports[0]
+        self._timestamp_new = int(time.mktime(report_date.timetuple()))
         return pd.read_excel(io.BytesIO(report.get_data()))
 
 
