@@ -4,6 +4,7 @@ from ftw.linkchecker.browser.dashboard import Dashboard
 from ftw.linkchecker.tests import FunctionalTestCase
 from ftw.linkchecker.tests.exemplar_data.annotation_asset import ANNOTATION_ASSET
 from plone import api
+import numpy as np
 import os
 import pandas as pd
 import transaction
@@ -50,9 +51,34 @@ class TestDashboardModelFunctional(FunctionalTestCase):
 
         pd.testing.assert_frame_equal(df_expected, df_actual)
 
+    def test_first_time_loading_page_with_no_persisted_data_no_report(self):
+        dashboard = Dashboard(self.portal, self.request)
+        df = dashboard.dashboard_model.data
+
+        self.assertTrue(
+            isinstance(df, pd.DataFrame),
+            'For consistency reasons "no data" should still return a DataFrame.')
+
     def test_first_time_loading_page_with_no_persisted_data(self):
-        # TODO: implement
-        pass
+        self.create_file_listing_block_with_report()
+        dashboard = Dashboard(self.portal, self.request)
+        df = dashboard.dashboard_model.data
+
+        self.assertTrue(
+            np.isnan(df.at[0, 'responsible']),
+            'No one should be responsible for finanzgeschaefte yet.')
+
+        self.assertFalse(
+            df.at[0, 'is_done'],
+            'The link should have a default False when newly initiated.')
+
+        self.assertFalse(
+            len(df[df['Destination'].str.contains('brettterpstra')]),
+            'The link containing brettterpstra is not in the new report.')
+
+        self.assertTrue(
+            len(df[df['Destination'].str.contains('gruener')]),
+            'The link containing gruener is in the new report.')
 
     def test_merging_data(self):
         self.create_file_listing_block_with_report()
