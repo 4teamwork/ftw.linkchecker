@@ -41,16 +41,6 @@ class TestDashboardModelFunctional(FunctionalTestCase):
             expected, dashboard.dashboard_model._get_annotation(),
             'It is expected that the annotation value can be set and get.')
 
-    def test_read_data_from_excel_report(self):
-        self.create_file_listing_block_with_report()
-        dashboard = Dashboard(self.portal, self.request)
-
-        # prepare dataframes to compare
-        df_expected = pd.read_excel(TEST_REPORT)
-        df_actual = dashboard.dashboard_model._latest_report_df
-
-        pd.testing.assert_frame_equal(df_expected, df_actual)
-
     def test_first_time_loading_page_with_no_persisted_data_no_report(self):
         dashboard = Dashboard(self.portal, self.request)
         df = dashboard.dashboard_model.data
