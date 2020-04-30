@@ -1,12 +1,11 @@
 from datetime import datetime
-from numpy import nan
 from plone import api
 from plone.app.controlpanel.usergroups import UsersOverviewControlPanel
 from zope.annotation.interfaces import IAnnotations
-from zope.publisher.browser import BrowserView
 import base64
 import io
 import matplotlib
+import numpy as np
 import pandas as pd
 import time
 
@@ -29,6 +28,11 @@ class Dashboard(UsersOverviewControlPanel):
         if search or findAll:
             self.newSearch = True
 
+        if form.get('toggle_done'):
+            target_state = form.get('target_state')
+            link_number = form.get('link_number')
+            # TODO: Toggle link to state target_state
+
         if submitted:
             assignment = [key for key in form.keys() if 'assign' in key]
             if assignment:
@@ -49,8 +53,12 @@ class Dashboard(UsersOverviewControlPanel):
             self.dashboard_model.data, self.dashboard_model.history)
 
     def get_links(self):
-        # TODO: provide links instead of dummy list
-        return [1, 2, 3, 4, 5, 6]
+        link_data = self.dashboard_model.data.to_dict('records')
+        for link in link_data:
+            for key in link:
+                if key == 'Status Code' and not np.isnan(link[key]):
+                    link[key] = int(link[key])
+        return link_data
 
 
 class DashboardModel(object):
@@ -76,7 +84,7 @@ class DashboardModel(object):
                 # add data the first time
                 df_new = self._latest_report_df
                 df_new['is_done'] = False
-                df_new['responsible'] = nan
+                df_new['responsible'] = np.nan
                 self._set_annotation(
                     {'timestamp': self._timestamp_new,
                      'report_data': df_new.to_dict('records')})
