@@ -4,6 +4,11 @@
     xmlns:browser="http://namespaces.zope.org/browser"
     i18n_domain="ftw.linkchecker">
 
+    <browser:resourceDirectory
+      name="ftw.linkchecker-resources"
+      directory="resources"
+      />
+
     <browser:page
         for="Products.CMFPlone.interfaces.siteroot.IPloneSiteRoot"
         name="linkchecker-dashboard"
