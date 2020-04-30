@@ -3,9 +3,14 @@ from numpy import nan
 from plone import api
 from zope.annotation.interfaces import IAnnotations
 from zope.publisher.browser import BrowserView
+import base64
 import io
+import matplotlib
 import pandas as pd
 import time
+
+matplotlib.use('Agg')
+import matplotlib.pyplot as plt  # noqa
 
 
 class Dashboard(BrowserView):
@@ -13,7 +18,8 @@ class Dashboard(BrowserView):
     def __init__(self, context, request):
         super(Dashboard, self).__init__(context, request)
         self.dashboard_model = DashboardModel(self.context, self.request)
-        self.graph_generator = GraphGenerator()
+        self.graph_generator = GraphGenerator(
+            self.dashboard_model.data, self.dashboard_model.history)
 
 
 class DashboardModel(object):
@@ -27,6 +33,7 @@ class DashboardModel(object):
         self._timestamp_old = self._persisted_data.get('timestamp', 0)
         self._timestamp_new = None
         self._reports = self._load_and_sort_fileblock_reports()
+        self.history = self._collect_history()
 
         self._latest_report_df = self._get_latest_report_df_from_excel()
         if isinstance(self._latest_report_df, pd.DataFrame):
@@ -51,6 +58,13 @@ class DashboardModel(object):
             else:
                 # no data found
                 self.data = pd.DataFrame()
+
+    def _collect_history(self):
+        # TODO: implement collect number of values by self._reports
+        return pd.DataFrame(
+            {'301': [20, 18, 489, 675, 1776],
+             '404': [4, 25, 281, 600, 1900]},
+            index=[1990, 1997, 2003, 2009, 2014])
 
     def _update_data(self):
         # use only key cols and unique cols
@@ -120,4 +134,67 @@ class DashboardModel(object):
 
 
 class GraphGenerator(object):
-    pass
+
+    def __init__(self, data_df, history_df):
+        self.df = data_df
+        self.history = history_df
+
+    def get_status_plot(self):
+        if not len(self.df):
+            return
+        status = self.df['Status Code'].fillna(0).astype(int).replace(0, 'NaN')
+        quantity_per_status = status.value_counts(dropna=False)
+        fig = plt.figure()
+        fig = quantity_per_status.plot.pie(
+            label='', title='By Status Codes').figure
+
+        img_tag = self._generate_img_tag(fig)
+        return img_tag
+
+    def get_creator_plot(self):
+        if not len(self.df):
+            return
+        creator = self.df['Creator']
+        quantity_per_creator = creator.value_counts(dropna=False)
+        fig = plt.figure()
+        fig = quantity_per_creator.plot.pie(
+            label='', title='By Creator').figure
+
+        img_tag = self._generate_img_tag(fig)
+        return img_tag
+
+    def get_workflow_plot(self):
+        if not len(self.df):
+            return
+        state = self.df['Review State']
+        quantity_per_state = state.value_counts(dropna=False)
+        fig = plt.figure()
+        fig = quantity_per_state.plot.pie(
+            label='', title='By Review State').figure
+
+        img_tag = self._generate_img_tag(fig)
+        return img_tag
+
+    def get_history_plot(self):
+        if not len(self.df):
+            return
+        fig = plt.figure()
+        fig = self.history.plot.line(
+            label='', title="History by Status Code").figure
+
+        img_tag = self._generate_img_tag(fig)
+        return img_tag
+
+    def _generate_img_tag(self, fig):
+        encoded = self._fig_to_base64(fig)
+        return '<img src="data:image/png;base64, {}">'.format(
+            encoded.decode('utf-8'))
+
+    @staticmethod
+    def _fig_to_base64(fig):
+        img = io.BytesIO()
+        fig.savefig(img, format='png',
+                    bbox_inches='tight')
+        img.seek(0)
+
+        return base64.b64encode(img.getvalue())
