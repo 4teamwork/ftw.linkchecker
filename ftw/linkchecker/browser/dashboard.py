@@ -1,6 +1,7 @@
 from datetime import datetime
 from numpy import nan
 from plone import api
+from plone.app.controlpanel.usergroups import UsersOverviewControlPanel
 from zope.annotation.interfaces import IAnnotations
 from zope.publisher.browser import BrowserView
 import base64
@@ -13,7 +14,31 @@ matplotlib.use('Agg')
 import matplotlib.pyplot as plt  # noqa
 
 
-class Dashboard(BrowserView):
+class Dashboard(UsersOverviewControlPanel):
+
+    def __call__(self):
+
+        form = self.request.form
+        submitted = form.get('form.submitted', False)
+        search = form.get('form.button.Search', None) is not None
+        findAll = form.get('form.button.FindAll', None) is not None
+        self.searchString = not findAll and form.get('searchstring', '') or ''
+        self.searchResults = []
+        self.newSearch = False
+
+        if search or findAll:
+            self.newSearch = True
+
+        if submitted:
+            if form.get('form.button.AssignUser', None) is not None:
+                users = form.get('users', [])
+                # TODO: Assign User to link
+
+        # Only search for all ('') if the many_users flag is not set.
+        if not(self.many_users) or bool(self.searchString):
+            self.searchResults = self.doSearch(self.searchString)
+
+        return self.index()
 
     def __init__(self, context, request):
         super(Dashboard, self).__init__(context, request)
