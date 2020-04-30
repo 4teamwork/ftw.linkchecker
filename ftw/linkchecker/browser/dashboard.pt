@@ -12,6 +12,14 @@
     </metal:main>
 
     <div metal:fill-slot="content-core">
+      <span tal:content="structure view/graph_generator/get_status_plot"
+            class="pie-chart status-plot" />
+      <span tal:content="structure view/graph_generator/get_creator_plot"
+            class="pie-chart creator-plot" />
+      <span tal:content="structure view/graph_generator/get_workflow_plot"
+            class="pie-chart workflow-plot" />
+      <span tal:content="structure view/graph_generator/get_history_plot"
+            class="line-chart history-plot" />
       <p>
       Lorem ipsum dolor sit amet, consectetur adipiscing elit.
       Illa videamus, quae a te de amicitia dicta sunt.
