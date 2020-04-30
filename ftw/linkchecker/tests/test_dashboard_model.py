@@ -1,18 +1,9 @@
-from ftw.builder import Builder
-from ftw.builder import create
 from ftw.linkchecker.browser.dashboard import Dashboard
 from ftw.linkchecker.tests import FunctionalTestCase
 from ftw.linkchecker.tests.exemplar_data.annotation_asset import ANNOTATION_ASSET
-from plone import api
+from ftw.linkchecker.tests.helpers import create_file_listing_block_with_report
 import numpy as np
-import os
 import pandas as pd
-import transaction
-
-
-ASSET_NAME = 'linkchecker_report_2020_Feb_28_130820.xlsx'
-TEST_FOLDER_PATH = os.path.dirname(os.path.abspath(__file__))
-TEST_REPORT = os.path.join(TEST_FOLDER_PATH, 'exemplar_data', ASSET_NAME)
 
 
 class TestDashboardModelFunctional(FunctionalTestCase):
@@ -50,7 +41,7 @@ class TestDashboardModelFunctional(FunctionalTestCase):
             'For consistency reasons "no data" should still return a DataFrame.')
 
     def test_first_time_loading_page_with_no_persisted_data(self):
-        self.create_file_listing_block_with_report()
+        create_file_listing_block_with_report(self.portal)
         dashboard = Dashboard(self.portal, self.request)
         df = dashboard.dashboard_model.data
 
@@ -71,7 +62,7 @@ class TestDashboardModelFunctional(FunctionalTestCase):
             'The link containing gruener is in the new report.')
 
     def test_merging_data(self):
-        self.create_file_listing_block_with_report()
+        create_file_listing_block_with_report(self.portal)
         dashboard = Dashboard(self.portal, self.request)
         # set annotations to update later
         dashboard.dashboard_model._set_annotation(ANNOTATION_ASSET)
@@ -95,23 +86,3 @@ class TestDashboardModelFunctional(FunctionalTestCase):
         self.assertTrue(
             len(df[df['Destination'].str.contains('gruener')]),
             'The link containing gruener is in the new report.')
-
-    def create_file_listing_block_with_report(self):
-        # build structure so that there is an excel report at
-        # linkchecker/reports which is the default in registry.xml
-        linkchecker_page = create(Builder('sl content page')
-                                  .titled(u'linkchecker')
-                                  .within(self.portal))
-        file_listing_block = create(Builder('sl listingblock')
-                                    .titled(u'reports')
-                                    .within(linkchecker_page))
-
-        # upload test asset to the file listing block
-        with open(TEST_REPORT, 'rb') as f_:
-            f_.seek(0)
-            data = f_.read()
-        file_ = api.content.create(
-            container=file_listing_block, type='File',
-            title=ASSET_NAME, file=data)
-        file_.setFilename(ASSET_NAME)
-        transaction.commit()
