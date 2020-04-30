@@ -30,8 +30,10 @@ class Dashboard(UsersOverviewControlPanel):
             self.newSearch = True
 
         if submitted:
-            if form.get('form.button.AssignUser', None) is not None:
-                users = form.get('users', [])
+            assignment = [key for key in form.keys() if 'assign' in key]
+            if assignment:
+                link_number = assignment[0][-6:].split('_', 1)[0]
+                userid_number = assignment[0][-6:].split('_', 1)[1]
                 # TODO: Assign User to link
 
         # Only search for all ('') if the many_users flag is not set.
@@ -45,6 +47,10 @@ class Dashboard(UsersOverviewControlPanel):
         self.dashboard_model = DashboardModel(self.context, self.request)
         self.graph_generator = GraphGenerator(
             self.dashboard_model.data, self.dashboard_model.history)
+
+    def get_links(self):
+        # TODO: provide links instead of dummy list
+        return [1, 2, 3, 4, 5, 6]
 
 
 class DashboardModel(object):

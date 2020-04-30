@@ -32,6 +32,8 @@
               class="line-chart history-plot" />
 
         <div id="content-core">
+
+          <div tal:repeat="link_item python:enumerate(view.get_links())">
           <form action=""
                 class="enableAutoFocus"
                 name="users_search"
@@ -84,13 +86,15 @@
                                          title userid">
                         <tal:block replace="structure context/portal_url/user.png"/>&nbsp;<span tal:replace="user/fullname">Full Name</span>
                       </a>
-                      <input type="hidden" name="users.id:records" tal:attributes="value userid" />
+
+                      <tal:definition tal:define="link_number python:link_item[0];
+                                                  link_data python:link_item[1]">
                       <input class="context"
                              type="submit"
-                             name="form.button.AssignUser"
-                             value="users.id:records"
-                             i18n:attributes="value label_apply_changes;"
+                             tal:attributes="value string:Assign;
+                                             name string:assign_${link_number}_${userid}"
                        />
+                      </tal:definition>
 
                     </td>
                   </tr>
@@ -134,6 +138,8 @@
             <input tal:replace="structure context/@@authenticator/authenticator" />
 
           </form>
+          </div>
+
         </div>
       </div>
     </div>
