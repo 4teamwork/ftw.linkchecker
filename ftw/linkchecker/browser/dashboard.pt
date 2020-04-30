@@ -33,111 +33,115 @@
 
         <div id="content-core">
 
+
           <div tal:repeat="link_item python:enumerate(view.get_links())">
-          <form action=""
-                class="enableAutoFocus"
-                name="users_search"
-                method="post"
-                tal:attributes="action string:$portal_url/$template_id"
-                tal:define="findAll python:'form.button.FindAll' in request.keys();
-                            portal_users view/searchResults;
-                            batch python:Batch(portal_users, b_size, int(b_start), orphan=1);
-                            batchformkeys python:['searchstring','_authenticator'];
-                            many_users view/many_users">
-            <input type="hidden" name="form.submitted" value="1" />
+            <a class="linkchecker-toggle">Toggle Entry</a>
+            <div class="hide-show" style="display: none;">
+              <form action=""
+                    class="enableAutoFocus"
+                    name="users_search"
+                    method="post"
+                    tal:attributes="action string:$portal_url/$template_id"
+                    tal:define="findAll python:'form.button.FindAll' in request.keys();
+                                portal_users view/searchResults;
+                                batch python:Batch(portal_users, b_size, int(b_start), orphan=1);
+                                batchformkeys python:['searchstring','_authenticator'];
+                                many_users view/many_users">
+                <input type="hidden" name="form.submitted" value="1" />
 
-            <table class="listing" summary="User Listing">
-              <tbody>
-                <tr class="odd">
-                  <th colspan="6" tal:attributes="colspan python:len(portal_roles)+4">
-                    <span tal:omit-tag="" i18n:translate="label_user_search">User Search</span>:
-                    <input class="quickSearch"
-                           type="text"
-                           name="searchstring"
-                           value=""
-                           tal:attributes="value view/searchString;"
+                <table class="listing" summary="User Listing">
+                  <tbody>
+                    <tr class="odd">
+                      <th colspan="6" tal:attributes="colspan python:len(portal_roles)+4">
+                        <span tal:omit-tag="" i18n:translate="label_user_search">User Search</span>:
+                        <input class="quickSearch"
+                               type="text"
+                               name="searchstring"
+                               value=""
+                               tal:attributes="value view/searchString;"
+                               />
+
+                        <input type="submit"
+                               class="searchButton"
+                               name="form.button.Search"
+                               value="Search"
+                               i18n:attributes="value label_search;"
+                               />
+
+                        <input type="submit"
+                               class="searchButton"
+                               name="form.button.FindAll"
+                               value="Show all"
+                               i18n:attributes="value label_showall;"
+                               tal:condition="not:many_users"
+                               />
+                      </th>
+                    </tr>
+                    <tal:block repeat="user batch">
+                      <tr tal:define="oddrow repeat/user/odd;
+                                      userid user/userid;
+                                      userquery python:view.makeQuery(userid=userid);"
+                          tal:attributes="class python:oddrow and 'odd' or 'even'">
+
+                        <td>
+                          <a href="@@user-information"
+                             tal:attributes="href string:$portal_url/@@user-information?${userquery};
+                                             title userid">
+                            <tal:block replace="structure context/portal_url/user.png"/>&nbsp;<span tal:replace="user/fullname">Full Name</span>
+                          </a>
+
+                          <tal:definition tal:define="link_number python:link_item[0];
+                                                      link_data python:link_item[1]">
+                          <input class="context"
+                                 type="submit"
+                                 tal:attributes="value string:Assign;
+                                                 name string:assign_${link_number}_${userid}"
                            />
+                          </tal:definition>
 
-                    <input type="submit"
-                           class="searchButton"
-                           name="form.button.Search"
-                           value="Search"
-                           i18n:attributes="value label_search;"
-                           />
+                        </td>
+                      </tr>
+                    </tal:block>
+                    <tr tal:condition="not:batch">
+                      <td tal:condition="view/searchString"
+                          i18n:translate="text_nomatches"
+                          style="text-align:center;">No matches</td>
+                      <tal:block tal:condition="not:view/searchString">
+                        <td tal:condition="many_users"
+                            class="discreet"
+                            i18n:translate="text_no_user_searchstring"
+                            style="text-align:center; font-size: 100%;">
+                            Enter a username to search for
+                        </td>
+                        <td tal:condition="not:many_users"
+                            class="discreet"
+                            i18n:translate="text_no_user_searchstring_largesite"
+                            style="text-align:center; font-size: 100%;">
+                            Enter a username to search for, or click 'Show All'
+                        </td>
+                      </tal:block>
+                    </tr>
+                  </tbody>
+                </table>
 
-                    <input type="submit"
-                           class="searchButton"
-                           name="form.button.FindAll"
-                           value="Show all"
-                           i18n:attributes="value label_showall;"
-                           tal:condition="not:many_users"
-                           />
-                  </th>
-                </tr>
-                <tal:block repeat="user batch">
-                  <tr tal:define="oddrow repeat/user/odd;
-                                  userid user/userid;
-                                  userquery python:view.makeQuery(userid=userid);"
-                      tal:attributes="class python:oddrow and 'odd' or 'even'">
+                <div metal:use-macro="context/batch_macros/macros/navigation" />
 
-                    <td>
-                      <a href="@@user-information"
-                         tal:attributes="href string:$portal_url/@@user-information?${userquery};
-                                         title userid">
-                        <tal:block replace="structure context/portal_url/user.png"/>&nbsp;<span tal:replace="user/fullname">Full Name</span>
-                      </a>
+                <div class="showAllSearchResults"
+                     tal:condition="python:batch.next or batch.previous"
+                     tal:define="mq python:modules['ZTUtils'].make_query;
+                                 keys batchformkeys|nothing;
+                                 linkparams python:keys and dict([(key, request.form[key]) for key in keys if key in request]) or request.form;
+                                 url batch_base_url | string:${context/absolute_url}/${template_id}">
+                  <a tal:attributes="href python: '%s?%s' % (url, mq( linkparams, {'showAll':'y'} ))"
+                     i18n:translate="description_pas_show_all_search_results">
+                      Show all search results
+                  </a>
+                </div>
 
-                      <tal:definition tal:define="link_number python:link_item[0];
-                                                  link_data python:link_item[1]">
-                      <input class="context"
-                             type="submit"
-                             tal:attributes="value string:Assign;
-                                             name string:assign_${link_number}_${userid}"
-                       />
-                      </tal:definition>
+                <input tal:replace="structure context/@@authenticator/authenticator" />
 
-                    </td>
-                  </tr>
-                </tal:block>
-                <tr tal:condition="not:batch">
-                  <td tal:condition="view/searchString"
-                      i18n:translate="text_nomatches"
-                      style="text-align:center;">No matches</td>
-                  <tal:block tal:condition="not:view/searchString">
-                    <td tal:condition="many_users"
-                        class="discreet"
-                        i18n:translate="text_no_user_searchstring"
-                        style="text-align:center; font-size: 100%;">
-                        Enter a username to search for
-                    </td>
-                    <td tal:condition="not:many_users"
-                        class="discreet"
-                        i18n:translate="text_no_user_searchstring_largesite"
-                        style="text-align:center; font-size: 100%;">
-                        Enter a username to search for, or click 'Show All'
-                    </td>
-                  </tal:block>
-                </tr>
-              </tbody>
-            </table>
-
-            <div metal:use-macro="context/batch_macros/macros/navigation" />
-
-            <div class="showAllSearchResults"
-                 tal:condition="python:batch.next or batch.previous"
-                 tal:define="mq python:modules['ZTUtils'].make_query;
-                             keys batchformkeys|nothing;
-                             linkparams python:keys and dict([(key, request.form[key]) for key in keys if key in request]) or request.form;
-                             url batch_base_url | string:${context/absolute_url}/${template_id}">
-              <a tal:attributes="href python: '%s?%s' % (url, mq( linkparams, {'showAll':'y'} ))"
-                 i18n:translate="description_pas_show_all_search_results">
-                  Show all search results
-              </a>
+              </form>
             </div>
-
-            <input tal:replace="structure context/@@authenticator/authenticator" />
-
-          </form>
           </div>
 
         </div>
