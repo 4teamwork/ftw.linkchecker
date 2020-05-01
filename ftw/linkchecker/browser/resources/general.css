@@ -1,0 +1,61 @@
+.pie-chart img {
+  width: 30%;
+}
+
+.line-chart img {
+  width: 100%;
+  height: max-content;
+}
+
+.link-container {
+  border-bottom: 1px black solid;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+
+.detail-container {
+  width: 100%;
+}
+
+.user-search-table {
+  background: lavender;
+}
+
+.user-search-table th {
+  text-align: left;
+  display: flex;
+}
+
+.user-search-table th .search-string {
+  flex-grow: 2;
+}
+
+.link-destination {
+  flex-grow: 2;
+}
+
+.user-search-table input[type="submit"]{
+  margin: 0;
+}
+
+.linkchecker-toggle, .visit-button, #toggle_done {
+  margin: 0 10px;
+}
+
+.icon-arrow-down, .icon-arrow-up {
+  margin-right: 10px;
+}
+
+.linkchecker-toggle:hover {
+  text-decoration: none;
+}
+
+.icon-arrow-down:before {
+  content:  "\2304";
+}
+
+.icon-arrow-up:before {
+  content:  "\2303";
+}

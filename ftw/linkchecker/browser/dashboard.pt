@@ -33,25 +33,28 @@
 
         <div id="content-core">
 
-          <div tal:repeat="link_item python:enumerate(view.get_links())">
+          <div tal:repeat="link_item python:enumerate(view.get_links())"
+               class="link-container">
             <tal:prepare_data tal:define="link_number python:link_item[0];
                                           link_data python:link_item[1]">
 
 
-              <span tal:content="link_data/Destination" />
-              <a tal:attributes="href link_data/Origin"><button>Visit</button></a>
+              <span class="link-destination" tal:content="link_data/Destination" />
+              <a tal:attributes="href link_data/Origin"><button class="visit-button">Visit</button></a>
               <form action="" method="post">
                 <input type="hidden" name="link_number"
                        tal:attributes="value link_number" />
                 <input type="hidden" name="target_state"
                        tal:attributes="value python:False if link_data.get('is_done') else True" />
-                <input type="submit" name="toggle_done" id="toggle_done"
-                       tal:attributes="value python:False if link_data.get('is_done') else True">
+                <span>Done: </span>
+                <input type="checkbox" name="toggle_done" id="toggle_done"
+                       tal:attributes="value python:1 if link_data.get('is_done') else 0"
+                       onChange="submit();">
               </form>
-              <button class="linkchecker-toggle">
-                Toggle
-              </button>
-              <div class="hide-show" style="display: none;">
+              <a class="linkchecker-toggle">
+                <span class="icon-arrow-down"></span>
+              </a>
+              <div class="hide-show detail-container" style="display: none;">
                 <form action=""
                       class="enableAutoFocus"
                       name="users_search"
@@ -64,11 +67,11 @@
                                   many_users view/many_users">
                   <input type="hidden" name="form.submitted" value="1" />
 
-                  <table class="listing" summary="User Listing">
+                  <table class="listing user-search-table" summary="User Listing">
                     <tbody>
                       <tr class="odd">
                         <th colspan="6" tal:attributes="colspan python:len(portal_roles)+4">
-                          <span tal:omit-tag="" i18n:translate="label_user_search">User Search</span>:
+                          <span class="search-string">User Search</span>
                           <input class="quickSearch"
                                  type="text"
                                  name="searchstring"
@@ -81,14 +84,6 @@
                                  name="form.button.Search"
                                  value="Search"
                                  i18n:attributes="value label_search;"
-                                 />
-
-                          <input type="submit"
-                                 class="searchButton"
-                                 name="form.button.FindAll"
-                                 value="Show all"
-                                 i18n:attributes="value label_showall;"
-                                 tal:condition="not:many_users"
                                  />
                         </th>
                       </tr>
