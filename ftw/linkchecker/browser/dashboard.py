@@ -28,10 +28,11 @@ class Dashboard(UsersOverviewControlPanel):
         if search or findAll:
             self.newSearch = True
 
-        if form.get('toggle_done'):
+        if form.get('target_state') and form.get('link_number'):
             target_state = form.get('target_state')
             link_number = form.get('link_number')
-            # TODO: Toggle link to state target_state
+            self.dashboard_model.set_done_state(link_number, target_state)
+            self.__init__(self.context, self.request)
 
         if submitted:
             assignment = [key for key in form.keys() if 'assign' in key]
@@ -98,6 +99,20 @@ class DashboardModel(object):
             else:
                 # no data found
                 self.data = pd.DataFrame()
+
+    def set_done_state(self, link_id, new_state):
+        new_state = True if new_state == 'done' else False
+        report_data = self._persisted_data['report_data']
+
+        updated_data = []
+        for link in report_data:
+            if str(link['id']) == link_id:
+                link['is_done'] = new_state
+            updated_data.append(link)
+
+        self._set_annotation(
+            {'timestamp': self._timestamp_old,
+             'report_data': updated_data})
 
     def _collect_history(self):
         # TODO: implement collect number of values by self._reports

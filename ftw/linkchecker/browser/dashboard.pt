@@ -42,10 +42,11 @@
               <input type="hidden" name="link_number"
                      tal:attributes="value link_item/id" />
               <input type="hidden" name="target_state"
-                     tal:attributes="value python:False if link_item.get('is_done') else True" />
+                     tal:attributes="value python:'not_done' if link_item.get('is_done') else 'done'" />
               <span>Done: </span>
+              <span tal:content="python:link_item.get('is_done')" />
               <input type="checkbox" name="toggle_done" id="toggle_done"
-                     tal:attributes="value python:1 if link_item.get('is_done') else 0"
+                     tal:attributes="checked python:'checked' if link_item.get('is_done') else ''"
                      onChange="submit();">
             </form>
             <a class="linkchecker-toggle">
