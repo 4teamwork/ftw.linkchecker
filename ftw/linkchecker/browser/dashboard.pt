@@ -31,6 +31,18 @@
         <span tal:content="structure view/graph_generator/get_history_plot"
               class="line-chart history-plot" />
 
+        <form action="" method="post">
+          <select name="filter" id="filter">
+            <option value="by_user">My Links only</option>
+            <option value="status">HTTP Status Code</option>
+            <option value="by_done">Is Done</option>
+            <option value="workflow_state">Workflow State</option>
+            <option value="internal_external">Intern/Extern</option>
+          </select>
+          <input type="text" name="query" id="query" value="">
+          <input type="submit" name="filter_submit" id="filter_submit">
+        </form>
+
         <div id="content-core">
 
           <div tal:repeat="link_item view/get_links"
