@@ -34,11 +34,11 @@
 
         <form action="" method="post">
           <select name="filter" id="filter">
-            <option value="by_user">My Links only</option>
-            <option value="status">HTTP Status Code</option>
-            <option value="by_done">Is Done</option>
-            <option value="workflow_state">Workflow State</option>
-            <option value="internal_external">Intern/Extern</option>
+            <option value="by_user" i18n:translate="">My Links only</option>
+            <option value="status" i18n:translate="">HTTP Status Code</option>
+            <option value="by_done" i18n:translate="">Is Done</option>
+            <option value="workflow_state" i18n:translate="">Workflow State</option>
+            <option value="internal_external" i18n:translate="">Internal/External</option>
           </select>
           <input type="text" name="query" id="query" value="">
           <input type="submit" name="filter_submit" id="filter_submit">
@@ -50,14 +50,15 @@
                class="link-container">
 
             <span class="link-destination" tal:content="link_item/Destination" />
-            <a tal:attributes="href link_item/Origin"><button class="visit-button">Visit</button></a>
+            <a tal:attributes="href link_item/Origin">
+              <button class="visit-button" i18n:translate="">Visit</button>
+            </a>
             <form action="" method="post">
               <input type="hidden" name="link_number"
                      tal:attributes="value link_item/id" />
               <input type="hidden" name="target_state"
                      tal:attributes="value python:'not_done' if link_item.get('is_done') else 'done'" />
-              <span>Done: </span>
-              <span tal:content="python:link_item.get('is_done')" />
+              <span i18n:translate="">Done: </span>
               <input type="checkbox" name="toggle_done" id="toggle_done"
                      tal:attributes="checked python:'checked' if link_item.get('is_done') else ''"
                      onChange="submit();">
@@ -82,7 +83,7 @@
                   <tbody>
                     <tr class="odd">
                       <th colspan="6" tal:attributes="colspan python:len(portal_roles)+4">
-                        <span class="search-string">User Search</span>
+                        <span class="search-string" i18n:translate="">User Search</span>
                         <input class="quickSearch"
                                type="text"
                                name="searchstring"
@@ -135,7 +136,7 @@
                             class="discreet"
                             i18n:translate="text_no_user_searchstring_largesite"
                             style="text-align:center; font-size: 100%;">
-                            Enter a username to search for, or click 'Show All'
+                            Enter a username to search for
                         </td>
                       </tal:block>
                     </tr>
@@ -163,27 +164,27 @@
               <table class="listing" summary="User Listing">
                 <tbody>
                   <tr class="odd">
-                    <td>Source</td>
+                    <td i18n:translate="">Source</td>
                     <td tal:content="python:link_item.get('Origin')" />
                   </tr>
                   <tr class="even">
-                    <td>Editing State</td>
+                    <td i18n:translate="">Editing State</td>
                     <td tal:content="python:link_item.get('is_done')" />
                   </tr>
                   <tr class="odd">
-                    <td>HTTP Status Code</td>
+                    <td i18n:translate="">HTTP Status Code</td>
                     <td tal:content="python:link_item.get('Status Code')" />
                   </tr>
                   <tr class="even">
-                    <td>Workflow State</td>
+                    <td i18n:translate="">Workflow State</td>
                     <td tal:content="python:link_item.get('Review State')" />
                   </tr>
                   <tr class="odd">
-                    <td>Internal/External</td>
+                    <td i18n:translate="">Internal/External</td>
                     <td tal:content="python:link_item.get('Internal/External')" />
                   </tr>
                   <tr class="even">
-                    <td>Responsible</td>
+                    <td i18n:translate="">Responsible</td>
                     <td tal:content="python:link_item.get('responsible')" />
                   </tr>
                 </tbody>
