@@ -1,3 +1,4 @@
+from Products.CMFPlone.PloneBatch import Batch
 from datetime import datetime
 from plone import api
 from plone.app.controlpanel.usergroups import UsersOverviewControlPanel
@@ -57,10 +58,16 @@ class Dashboard(UsersOverviewControlPanel):
 
     def __init__(self, context, request, apply_filter=None):
         super(Dashboard, self).__init__(context, request)
+        self.batch_size = 10
         self.dashboard_model = DashboardModel(
             self.context, self.request, apply_filter=apply_filter)
         self.graph_generator = GraphGenerator(
             self.dashboard_model.data, self.dashboard_model.history)
+
+    @property
+    def batch(self):
+        b_start = self.request.form.get('b_start', 0)
+        return Batch(self.get_links(), self.batch_size, b_start)
 
     def get_links(self):
         link_data = self.dashboard_model.data.to_dict('records')
