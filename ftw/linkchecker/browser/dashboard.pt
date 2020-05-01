@@ -33,153 +33,148 @@
 
         <div id="content-core">
 
-          <div tal:repeat="link_item python:enumerate(view.get_links())"
+          <div tal:repeat="link_item view/get_links"
                class="link-container">
-            <tal:prepare_data tal:define="link_number python:link_item[0];
-                                          link_data python:link_item[1]">
 
+            <span class="link-destination" tal:content="link_item/Destination" />
+            <a tal:attributes="href link_item/Origin"><button class="visit-button">Visit</button></a>
+            <form action="" method="post">
+              <input type="hidden" name="link_number"
+                     tal:attributes="value link_item/id" />
+              <input type="hidden" name="target_state"
+                     tal:attributes="value python:False if link_item.get('is_done') else True" />
+              <span>Done: </span>
+              <input type="checkbox" name="toggle_done" id="toggle_done"
+                     tal:attributes="value python:1 if link_item.get('is_done') else 0"
+                     onChange="submit();">
+            </form>
+            <a class="linkchecker-toggle">
+              <span class="icon-arrow-down"></span>
+            </a>
+            <div class="hide-show detail-container" style="display: none;">
+              <form action=""
+                    class="enableAutoFocus"
+                    name="users_search"
+                    method="post"
+                    tal:attributes="action string:$portal_url/$template_id"
+                    tal:define="findAll python:'form.button.FindAll' in request.keys();
+                                portal_users view/searchResults;
+                                batch python:Batch(portal_users, b_size, int(b_start), orphan=1);
+                                batchformkeys python:['searchstring','_authenticator'];
+                                many_users view/many_users">
+                <input type="hidden" name="form.submitted" value="1" />
 
-              <span class="link-destination" tal:content="link_data/Destination" />
-              <a tal:attributes="href link_data/Origin"><button class="visit-button">Visit</button></a>
-              <form action="" method="post">
-                <input type="hidden" name="link_number"
-                       tal:attributes="value link_number" />
-                <input type="hidden" name="target_state"
-                       tal:attributes="value python:False if link_data.get('is_done') else True" />
-                <span>Done: </span>
-                <input type="checkbox" name="toggle_done" id="toggle_done"
-                       tal:attributes="value python:1 if link_data.get('is_done') else 0"
-                       onChange="submit();">
-              </form>
-              <a class="linkchecker-toggle">
-                <span class="icon-arrow-down"></span>
-              </a>
-              <div class="hide-show detail-container" style="display: none;">
-                <form action=""
-                      class="enableAutoFocus"
-                      name="users_search"
-                      method="post"
-                      tal:attributes="action string:$portal_url/$template_id"
-                      tal:define="findAll python:'form.button.FindAll' in request.keys();
-                                  portal_users view/searchResults;
-                                  batch python:Batch(portal_users, b_size, int(b_start), orphan=1);
-                                  batchformkeys python:['searchstring','_authenticator'];
-                                  many_users view/many_users">
-                  <input type="hidden" name="form.submitted" value="1" />
-
-                  <table class="listing user-search-table" summary="User Listing">
-                    <tbody>
-                      <tr class="odd">
-                        <th colspan="6" tal:attributes="colspan python:len(portal_roles)+4">
-                          <span class="search-string">User Search</span>
-                          <input class="quickSearch"
-                                 type="text"
-                                 name="searchstring"
-                                 value=""
-                                 tal:attributes="value view/searchString;"
-                                 />
-
-                          <input type="submit"
-                                 class="searchButton"
-                                 name="form.button.Search"
-                                 value="Search"
-                                 i18n:attributes="value label_search;"
-                                 />
-                        </th>
-                      </tr>
-                      <tal:block repeat="user batch">
-                        <tr tal:define="oddrow repeat/user/odd;
-                                        userid user/userid;
-                                        userquery python:view.makeQuery(userid=userid);"
-                            tal:attributes="class python:oddrow and 'odd' or 'even'">
-
-                          <td>
-                            <a href="@@user-information"
-                               tal:attributes="href string:$portal_url/@@user-information?${userquery};
-                                               title userid">
-                              <tal:block replace="structure context/portal_url/user.png"/>&nbsp;<span tal:replace="user/fullname">Full Name</span>
-                            </a>
-
-                            <input class="context"
-                                   type="submit"
-                                   tal:attributes="value string:Assign;
-                                                   name string:assign_${link_number}_${userid}"
-                             />
-
-                          </td>
-                        </tr>
-                      </tal:block>
-                      <tr tal:condition="not:batch">
-                        <td tal:condition="view/searchString"
-                            i18n:translate="text_nomatches"
-                            style="text-align:center;">No matches</td>
-                        <tal:block tal:condition="not:view/searchString">
-                          <td tal:condition="many_users"
-                              class="discreet"
-                              i18n:translate="text_no_user_searchstring"
-                              style="text-align:center; font-size: 100%;">
-                              Enter a username to search for
-                          </td>
-                          <td tal:condition="not:many_users"
-                              class="discreet"
-                              i18n:translate="text_no_user_searchstring_largesite"
-                              style="text-align:center; font-size: 100%;">
-                              Enter a username to search for, or click 'Show All'
-                          </td>
-                        </tal:block>
-                      </tr>
-                    </tbody>
-                  </table>
-
-                  <div metal:use-macro="context/batch_macros/macros/navigation" />
-
-                  <div class="showAllSearchResults"
-                       tal:condition="python:batch.next or batch.previous"
-                       tal:define="mq python:modules['ZTUtils'].make_query;
-                                   keys batchformkeys|nothing;
-                                   linkparams python:keys and dict([(key, request.form[key]) for key in keys if key in request]) or request.form;
-                                   url batch_base_url | string:${context/absolute_url}/${template_id}">
-                    <a tal:attributes="href python: '%s?%s' % (url, mq( linkparams, {'showAll':'y'} ))"
-                       i18n:translate="description_pas_show_all_search_results">
-                        Show all search results
-                    </a>
-                  </div>
-
-                  <input tal:replace="structure context/@@authenticator/authenticator" />
-
-                </form>
-
-                <table class="listing" summary="User Listing">
+                <table class="listing user-search-table" summary="User Listing">
                   <tbody>
                     <tr class="odd">
-                      <td>Source</td>
-                      <td tal:content="python:link_data.get('Origin')" />
+                      <th colspan="6" tal:attributes="colspan python:len(portal_roles)+4">
+                        <span class="search-string">User Search</span>
+                        <input class="quickSearch"
+                               type="text"
+                               name="searchstring"
+                               value=""
+                               tal:attributes="value view/searchString;"
+                               />
+
+                        <input type="submit"
+                               class="searchButton"
+                               name="form.button.Search"
+                               value="Search"
+                               i18n:attributes="value label_search;"
+                               />
+                      </th>
                     </tr>
-                    <tr class="even">
-                      <td>Editing State</td>
-                      <td tal:content="python:link_data.get('is_done')" />
-                    </tr>
-                    <tr class="odd">
-                      <td>HTTP Status Code</td>
-                      <td tal:content="python:link_data.get('Status Code')" />
-                    </tr>
-                    <tr class="even">
-                      <td>Workflow State</td>
-                      <td tal:content="python:link_data.get('Review State')" />
-                    </tr>
-                    <tr class="odd">
-                      <td>Internal/External</td>
-                      <td tal:content="python:link_data.get('Internal/External')" />
-                    </tr>
-                    <tr class="even">
-                      <td>Responsible</td>
-                      <td tal:content="python:link_data.get('responsible')" />
+                    <tal:block repeat="user batch">
+                      <tr tal:define="oddrow repeat/user/odd;
+                                      userid user/userid;
+                                      userquery python:view.makeQuery(userid=userid);"
+                          tal:attributes="class python:oddrow and 'odd' or 'even'">
+
+                        <td>
+                          <a href="@@user-information"
+                             tal:attributes="href string:$portal_url/@@user-information?${userquery};
+                                             title userid">
+                            <tal:block replace="structure context/portal_url/user.png"/>&nbsp;<span tal:replace="user/fullname">Full Name</span>
+                          </a>
+
+                          <input class="context"
+                                 type="submit"
+                                 tal:attributes="value string:Assign;
+                                                 name string:assign_${link_item/id}_${userid}"
+                           />
+
+                        </td>
+                      </tr>
+                    </tal:block>
+                    <tr tal:condition="not:batch">
+                      <td tal:condition="view/searchString"
+                          i18n:translate="text_nomatches"
+                          style="text-align:center;">No matches</td>
+                      <tal:block tal:condition="not:view/searchString">
+                        <td tal:condition="many_users"
+                            class="discreet"
+                            i18n:translate="text_no_user_searchstring"
+                            style="text-align:center; font-size: 100%;">
+                            Enter a username to search for
+                        </td>
+                        <td tal:condition="not:many_users"
+                            class="discreet"
+                            i18n:translate="text_no_user_searchstring_largesite"
+                            style="text-align:center; font-size: 100%;">
+                            Enter a username to search for, or click 'Show All'
+                        </td>
+                      </tal:block>
                     </tr>
                   </tbody>
                 </table>
 
-              </div>
-            </tal:prepare_data>
+                <div metal:use-macro="context/batch_macros/macros/navigation" />
+
+                <div class="showAllSearchResults"
+                     tal:condition="python:batch.next or batch.previous"
+                     tal:define="mq python:modules['ZTUtils'].make_query;
+                                 keys batchformkeys|nothing;
+                                 linkparams python:keys and dict([(key, request.form[key]) for key in keys if key in request]) or request.form;
+                                 url batch_base_url | string:${context/absolute_url}/${template_id}">
+                  <a tal:attributes="href python: '%s?%s' % (url, mq( linkparams, {'showAll':'y'} ))"
+                     i18n:translate="description_pas_show_all_search_results">
+                      Show all search results
+                  </a>
+                </div>
+
+                <input tal:replace="structure context/@@authenticator/authenticator" />
+
+              </form>
+
+              <table class="listing" summary="User Listing">
+                <tbody>
+                  <tr class="odd">
+                    <td>Source</td>
+                    <td tal:content="python:link_item.get('Origin')" />
+                  </tr>
+                  <tr class="even">
+                    <td>Editing State</td>
+                    <td tal:content="python:link_item.get('is_done')" />
+                  </tr>
+                  <tr class="odd">
+                    <td>HTTP Status Code</td>
+                    <td tal:content="python:link_item.get('Status Code')" />
+                  </tr>
+                  <tr class="even">
+                    <td>Workflow State</td>
+                    <td tal:content="python:link_item.get('Review State')" />
+                  </tr>
+                  <tr class="odd">
+                    <td>Internal/External</td>
+                    <td tal:content="python:link_item.get('Internal/External')" />
+                  </tr>
+                  <tr class="even">
+                    <td>Responsible</td>
+                    <td tal:content="python:link_item.get('responsible')" />
+                  </tr>
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       </div>
