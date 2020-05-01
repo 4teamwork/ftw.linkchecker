@@ -38,8 +38,9 @@ class Dashboard(UsersOverviewControlPanel):
             assignment = [key for key in form.keys() if 'assign' in key]
             if assignment:
                 link_number = assignment[0][-6:].split('_', 1)[0]
-                userid_number = assignment[0][-6:].split('_', 1)[1]
-                # TODO: Assign User to link
+                userid = assignment[0][-6:].split('_', 1)[1]
+                self.dashboard_model.assign_user(link_number, userid)
+                self.__init__(self.context, self.request)
 
         # Only search for all ('') if the many_users flag is not set.
         if not(self.many_users) or bool(self.searchString):
@@ -99,6 +100,19 @@ class DashboardModel(object):
             else:
                 # no data found
                 self.data = pd.DataFrame()
+
+    def assign_user(self, link_id, user_id):
+        report_data = self._persisted_data['report_data']
+
+        updated_data = []
+        for link in report_data:
+            if str(link['id']) == link_id:
+                link['responsible'] = user_id
+            updated_data.append(link)
+
+        self._set_annotation(
+            {'timestamp': self._timestamp_old,
+             'report_data': updated_data})
 
     def set_done_state(self, link_id, new_state):
         new_state = True if new_state == 'done' else False
