@@ -28,6 +28,13 @@ class Dashboard(UsersOverviewControlPanel):
         if search or findAll:
             self.newSearch = True
 
+        if form.get('filter_submit'):
+            apply_filter = form.get('filter')
+            query = form.get('query')
+            self.__init__(
+                self.context, self.request,
+                apply_filter={'filter': apply_filter, 'query': query})
+
         if form.get('target_state') and form.get('link_number'):
             target_state = form.get('target_state')
             link_number = form.get('link_number')
@@ -48,9 +55,10 @@ class Dashboard(UsersOverviewControlPanel):
 
         return self.index()
 
-    def __init__(self, context, request):
+    def __init__(self, context, request, apply_filter=None):
         super(Dashboard, self).__init__(context, request)
-        self.dashboard_model = DashboardModel(self.context, self.request)
+        self.dashboard_model = DashboardModel(
+            self.context, self.request, apply_filter=apply_filter)
         self.graph_generator = GraphGenerator(
             self.dashboard_model.data, self.dashboard_model.history)
 
@@ -65,7 +73,7 @@ class Dashboard(UsersOverviewControlPanel):
 
 class DashboardModel(object):
 
-    def __init__(self, context, request):
+    def __init__(self, context, request, apply_filter=None):
         self.request = request
         self.context = context
 
@@ -101,6 +109,9 @@ class DashboardModel(object):
                 # no data found
                 self.data = pd.DataFrame()
 
+        if apply_filter:
+            self._filter(apply_filter)
+
     def assign_user(self, link_id, user_id):
         report_data = self._persisted_data['report_data']
 
@@ -127,6 +138,38 @@ class DashboardModel(object):
         self._set_annotation(
             {'timestamp': self._timestamp_old,
              'report_data': updated_data})
+
+    def _filter(self, apply_filter):
+        query = apply_filter.get('query')
+        filter_ = apply_filter.get('filter')
+
+        if filter_ == 'by_user':
+            current_user = api.user.get_current().getUserName()
+            self.data = self.data.loc[self.data['responsible'] == current_user]
+            return
+
+        if filter_ == 'status' and query:
+            try:
+                query = float(query)
+            except ValueError:
+                return
+            self.data = self.data.loc[self.data['Status Code'] == query]
+            return
+
+        if filter_ == 'by_done' and query:
+            if query not in ['True', 'False', 'true', 'false', '1', '0']:
+                return
+            query = True if query in ['True', 'true', '1'] else False
+            self.data = self.data.loc[self.data['is_done'] == query]
+            return
+
+        if filter_ == 'workflow_state' and query:
+            self.data = self.data.loc[self.data['Review State'] == query]
+            return
+
+        if filter_ == 'internal_external' and query:
+            self.data = self.data.loc[self.data['Internal/External'] == query]
+            return
 
     def _collect_history(self):
         # TODO: implement collect number of values by self._reports
