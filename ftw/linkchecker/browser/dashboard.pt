@@ -14,7 +14,8 @@
                   b_start python:0 if showAll or view.newSearch else request.get('b_start',0);
                   b_size python:showAll and len(view.searchResults) or 20;
                   portal_roles view/portal_roles;
-                  portal_url context/portal_url;">
+                  portal_url context/portal_url;
+                  batch view/batch">
 
     <div class="documentEditable">
       <div id="content">
@@ -45,7 +46,7 @@
 
         <div id="content-core">
 
-          <div tal:repeat="link_item view/get_links"
+          <div tal:repeat="link_item batch"
                class="link-container">
 
             <span class="link-destination" tal:content="link_item/Destination" />
@@ -189,6 +190,7 @@
               </table>
             </div>
           </div>
+          <div metal:use-macro="context/batch_macros/macros/navigation" />
         </div>
       </div>
     </div>
