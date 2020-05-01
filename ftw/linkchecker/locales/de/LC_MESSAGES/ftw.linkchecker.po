@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2020-04-28 07:46+0000\n"
+"POT-Creation-Date: 2020-05-01 18:54+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI +ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -11,19 +11,88 @@ msgstr ""
 "Plural-Forms: nplurals=1; plural=0\n"
 "Preferred-Encodings: utf-8 latin1\n"
 
-#: ./ftw/linkchecker/configure.zcml:23
+#: ./ftw/linkchecker/configure.zcml:22
 msgid "Add ftw.linkchecker management dashboard."
 msgstr "ftw.linkchecker management Dashboard hinzufügen."
 
-#: ./ftw/linkchecker/browser/dashboard.pt:11
+#: ./ftw/linkchecker/browser/dashboard.pt:61
+msgid "Done:"
+msgstr "Erledigt:"
+
+#: ./ftw/linkchecker/browser/dashboard.pt:171
+msgid "Editing State"
+msgstr "Bearbeitungsstand"
+
+#: ./ftw/linkchecker/browser/dashboard.pt:38
+msgid "HTTP Status Code"
+msgstr ""
+
+#: ./ftw/linkchecker/browser/dashboard.pt:41
+msgid "Internal/External"
+msgstr "Intern/Extern"
+
+#: ./ftw/linkchecker/browser/dashboard.pt:39
+msgid "Is Done"
+msgstr "Erledigt"
+
+#: ./ftw/linkchecker/browser/dashboard.pt:23
 msgid "Linkchecker Dashboard"
 msgstr ""
 
-#: ./ftw/linkchecker/configure.zcml:31
+#: ./ftw/linkchecker/browser/dashboard.pt:37
+msgid "My Links only"
+msgstr "Nur meine Links"
+
+#: ./ftw/linkchecker/browser/dashboard.pt:187
+msgid "Responsible"
+msgstr "Zuständig"
+
+#: ./ftw/linkchecker/browser/dashboard.pt:167
+msgid "Source"
+msgstr "Quelle"
+
+#: ./ftw/linkchecker/configure.zcml:30
 msgid "Uninstall ftw.linkchecker"
 msgstr "ftw.linkchecker deinstallieren"
 
-#: ./ftw/linkchecker/configure.zcml:23
+#: ./ftw/linkchecker/browser/dashboard.pt:86
+msgid "User Search"
+msgstr "User Suche"
+
+#: ./ftw/linkchecker/browser/dashboard.pt:54
+msgid "Visit"
+msgstr "Besuchen"
+
+#: ./ftw/linkchecker/browser/dashboard.pt:40
+msgid "Workflow State"
+msgstr "Workflow Status"
+
+#. Default: "Show all search results"
+#: ./ftw/linkchecker/browser/dashboard.pt:154
+msgid "description_pas_show_all_search_results"
+msgstr "Alle Suchresultate anzeigen"
+
+#: ./ftw/linkchecker/configure.zcml:22
 msgid "ftw.linkchecker"
 msgstr ""
+
+#. Default: "Search"
+#: ./ftw/linkchecker/browser/dashboard.pt:94
+msgid "label_search"
+msgstr "Suche"
+
+#. Default: "Enter a username to search for"
+#: ./ftw/linkchecker/browser/dashboard.pt:129
+msgid "text_no_user_searchstring"
+msgstr "Username eingeben um danach zu suchen"
+
+#. Default: "Enter a username to search for"
+#: ./ftw/linkchecker/browser/dashboard.pt:135
+msgid "text_no_user_searchstring_largesite"
+msgstr "Username eingeben um danach zu suchen"
+
+#. Default: "No matches"
+#: ./ftw/linkchecker/browser/dashboard.pt:125
+msgid "text_nomatches"
+msgstr "Keine Resultate"
 
