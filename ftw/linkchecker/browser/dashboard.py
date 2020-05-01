@@ -84,6 +84,7 @@ class DashboardModel(object):
                 # add data the first time
                 df_new = self._latest_report_df
                 df_new['is_done'] = False
+                df_new['id'] = df_new.index
                 df_new['responsible'] = np.nan
                 self._set_annotation(
                     {'timestamp': self._timestamp_new,
@@ -112,6 +113,7 @@ class DashboardModel(object):
         # use all cols plus add is_done with default False
         df_new = self._latest_report_df
         df_new['is_done'] = False
+        df_new['id'] = df_new.index
         # merge by keys Origin and Destination
         merged = df_old.merge(df_new, on=['Origin', 'Destination'], how='outer')
         # if Internal/External is NaN (only in old report) -> drop row
