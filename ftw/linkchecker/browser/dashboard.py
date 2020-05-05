@@ -273,7 +273,7 @@ class GraphGenerator(object):
             return
         status = self.df['Status Code'].fillna(0).astype(int).replace(0, 'NaN')
         quantity_per_status = status.value_counts(dropna=False)
-        fig = plt.figure()
+        fig = plt.figure(figsize=(6, 6))
         fig = quantity_per_status.plot.pie(
             label='', title='By Status Codes').figure
 
@@ -285,7 +285,7 @@ class GraphGenerator(object):
             return
         creator = self.df['Creator']
         quantity_per_creator = creator.value_counts(dropna=False)
-        fig = plt.figure()
+        fig = plt.figure(figsize=(6, 6))
         fig = quantity_per_creator.plot.pie(
             label='', title='By Creator').figure
 
@@ -297,7 +297,15 @@ class GraphGenerator(object):
             return
         state = self.df['Review State']
         quantity_per_state = state.value_counts(dropna=False)
-        fig = plt.figure()
+
+        # This assumes that workflows follow the pattern
+        # <wf-name>--STATUS--<wf-state-name>
+        index_replacement = {}
+        new_labels = [{wf: wf.split('--')[-1]} for wf in quantity_per_state.index]
+        [quantity_per_state.rename(index=new_label, inplace=True)
+         for new_label in new_labels]
+
+        fig = plt.figure(figsize=(6, 6))
         fig = quantity_per_state.plot.pie(
             label='', title='By Review State').figure
 
@@ -308,8 +316,9 @@ class GraphGenerator(object):
         if not len(self.df):
             return
         fig = plt.figure()
-        fig = self.history.plot.line(
-            label='', title="History by Status Code").figure
+        fig = self.history.plot(
+            label='', title="History by Status Code", marker='D',
+            figsize=(20, 6)).figure
 
         img_tag = self._generate_img_tag(fig)
         return img_tag
