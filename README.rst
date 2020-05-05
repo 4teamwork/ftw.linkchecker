@@ -9,6 +9,13 @@ Introduction
 ``ftw.linkchecker`` is an add-on for Plone installations. It is designed to be run
 as a cronjob regularly to find and report broken links and references within Plone sites.
 
+If it's installed with its profile it comes with a management dashboard as
+well.
+
+.. figure:: ./assets/screenshot_dashboard.jpg
+   :align: center
+   :alt: Linkchecker Dashboard
+
 How it works
 ****************
 
@@ -83,8 +90,28 @@ The following options can be configured in the settings file per platform:
     }
 
 
+If the linkchecker dashboard is installed (profile installed) the upload
+location has to be configured in the registry for each policy. It has to be the
+same one configured in the above json configuration.
+The registry entry defaults to ``linkchecker/reports`` if not configured
+(relative to the current Plone Site).
+
+::
+
+    <record name="ftw.linkchecker.dashboard_storage">
+        <field type="plone.registry.field.TextLine">
+            <title>Storage of the linkchecker dashboard.</title>
+            <required>False</required>
+        </field>
+        <value>linkchecker/reports</value>
+    </record>
+
+
 Usage
 =====
+
+CLI Application
+***************
 
 Run command for ftw.linkchecker.
 
@@ -98,6 +125,29 @@ Run command for ftw.linkchecker.
   the path to a logfile (which was created in advance).
 - The third (optional) argument (prefixed with ``-p`` or ``--processes``) is
   the maximal number of processes spawned for the head requests.
+
+Dashboard
+*********
+
+The dashboard adds a view at ``platform/@@linkchecker-dashboard``.
+
+The dashboard (see image above) adds four graphs summarizing the most important
+info about the broken links (which status codes are affected, who is
+responsible for the broken relations, what is the workflow state of the
+content and how did it evolve over the last reports).
+
+Below the graphs the broken relations are listed. Further information can be
+seen opening the detail view. The links can be assigned to a user or checked as
+done.
+
+The dashboard implements a filter for the links. The filter arguments accepted
+for each filter are:
+
+- ``My Links only``: No arguments accepted.
+- ``HTTP Status Code``: Number of the status code e.g. ``404``
+- ``Is Done``: ``True``, ``true``, ``1`` or ``False``, ``false``, ``0``
+- ``Workflow State``: The exact workflow states name
+- ``Internal/External``: Either ``Internal`` or ``External``
 
 
 Development
