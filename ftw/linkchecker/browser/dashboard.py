@@ -179,11 +179,20 @@ class DashboardModel(object):
             return
 
     def _collect_history(self):
-        # TODO: implement collect number of values by self._reports
-        return pd.DataFrame(
-            {'301': [20, 18, 489, 675, 1776],
-             '404': [4, 25, 281, 600, 1900]},
-            index=[1990, 1997, 2003, 2009, 2014])
+        history_df = pd.DataFrame()
+        if not self._reports:
+            return history_df
+
+        for report_date, report in self._reports:
+            status_df = pd.read_excel(
+                io.BytesIO(report.get_data()))[['Status Code']]
+            cleaned_status_df = status_df[
+                'Status Code'].fillna(0).astype(int).replace(0, 'NaN')
+            quantity_per_status = cleaned_status_df.value_counts(
+                    ).to_frame().T.rename({'Status Code': report_date})
+            history_df = history_df.append(quantity_per_status)
+
+        return history_df
 
     def _update_data(self):
         # use only key cols and unique cols
