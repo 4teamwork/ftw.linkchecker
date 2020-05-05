@@ -63,7 +63,7 @@
                      tal:attributes="checked python:'checked' if link_item.get('is_done') else ''"
                      onChange="submit();">
             </form>
-            <a class="linkchecker-toggle">
+            <a tal:attributes="class python:'linkchecker-toggle {}'.format(link_item.get('id'))">
               <span class="icon-arrow-down"></span>
             </a>
             <div class="hide-show detail-container" style="display: none;">
