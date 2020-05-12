@@ -205,7 +205,7 @@ class DashboardModel(object):
         # merge by keys Origin and Destination
         merged = df_old.merge(df_new, on=['Origin', 'Destination'], how='outer')
         # if Internal/External is NaN (only in old report) -> drop row
-        merged = merged[merged['Internal/External'].notna()]
+        merged = merged.dropna(subset=['Internal/External'])
 
         self._set_annotation(
             {'timestamp': self._timestamp_new,
