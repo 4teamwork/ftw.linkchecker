@@ -8,18 +8,14 @@ version = '1.3.3.dev0'
 
 tests_require = [
     'ftw.builder',
+    'ftw.simplelayout [contenttypes]',
     'ftw.testbrowser',
     'ftw.testing',
+    'parameterized',
     'plone.app.testing',
     'plone.testing',
-    # later versions of pandas require python-dateutil>=2.5.0
-    'pandas < 0.23.0',
-    # from numpy 1.17.0 only python >= 3.5 is supported
-    'numpy < 1.17.0',
-    'xlrd >= 0.9.0',
     'requests',
     'xlsxwriter',
-    'ftw.simplelayout [contenttypes]',
 ]
 
 extras_require = {
@@ -28,12 +24,15 @@ extras_require = {
 
 install_requires = [
     'Plone',
-    'setuptools',
     'ftw.upgrade',
     'xlsxwriter',
+    'pandas < 0.23a',
+    'numpy < 1.17a',
+    'xlrd >= 0.9.0',
     'plone.api',
     'plone.app.relationfield',
     'plone.recipe.zope2instance',
+    'matplotlib < 3a',
 ]
 # python versions smaller 3.2 need
 # logutils for QueueListener and QueueHandler

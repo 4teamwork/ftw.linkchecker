@@ -5,6 +5,7 @@ Changelog
 1.4.0 (unreleased)
 ------------------
 
+- Add dashboard feature for managing broken Relations. [busykoala]
 - Refactoring of modules and tests. [busykoala]
 - Refactor especially the accumulator module. [busykoala]
 

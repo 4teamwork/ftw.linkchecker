@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<object name="portal_javascripts">
+
+    <javascript
+        id="++resource++ftw.linkchecker-resources/general.js"
+        compression="safe"
+        authenticated="False"
+        enabled="True"
+        />
+
+</object>
